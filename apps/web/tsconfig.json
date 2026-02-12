@@ -1,11 +1,22 @@
 {
   "extends": "@repo/typescript-config/nextjs.json",
   "compilerOptions": {
+    "baseUrl": "../..",
     "plugins": [
       {
         "name": "next"
       }
-    ]
+    ],
+    "paths": {
+      "@repo/core": ["packages/core/src/index.ts"],
+      "@repo/core/*": ["packages/core/src/*"],
+      "@repo/event-service": ["packages/event-service/src/index.ts"],
+      "@repo/event-service/*": ["packages/event-service/src/*"],
+      "@repo/car-service": ["packages/car-service/src/index.ts"],
+      "@repo/car-service/*": ["packages/car-service/src/*"],
+      "@repo/shared": ["packages/shared/src/index.ts"],
+      "@repo/shared/*": ["packages/shared/src/*"]
+    }
   },
   "include": [
     "**/*.ts",
@@ -14,7 +25,5 @@
     "next.config.js",
     ".next/types/**/*.ts"
   ],
-  "exclude": [
-    "node_modules"
-  ]
+  "exclude": ["node_modules"]
 }
