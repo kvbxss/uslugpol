@@ -1,4 +1,4 @@
-import { db } from "../../../shared/src/db";
+import { db } from "@repo/shared";
 import { transportRequests } from "../infra/car.schema";
 
 export type CreateCarLeadInput = {
@@ -23,4 +23,3 @@ export async function upsertCarLead(input: CreateCarLeadInput) {
 
   return row;
 }
-

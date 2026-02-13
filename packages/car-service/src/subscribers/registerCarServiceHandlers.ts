@@ -1,4 +1,4 @@
-import { eventBus, EventNames, type LeadCreatedPayload, type OpportunityDetectedPayload } from "../../../shared/src";
+import { eventBus, EventNames, type LeadCreatedPayload } from "@repo/shared";
 import { upsertCarLead } from "../application/carLead.service";
 
 export function registerCarServiceHandlers() {
@@ -11,15 +11,4 @@ export function registerCarServiceHandlers() {
       leadId: payload.leadId,
     });
   });
-
-  eventBus.subscribe(EventNames.OpportunityDetected, async (payload: OpportunityDetectedPayload) => {
-    if (payload.targetService !== "car") {
-      return;
-    }
-
-    await upsertCarLead({
-      leadId: payload.leadId,
-    });
-  });
 }
-

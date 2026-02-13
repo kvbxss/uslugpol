@@ -1,5 +1,6 @@
 import "dotenv/config";
 import { drizzle } from "drizzle-orm/node-postgres";
+// @ts-ignore no pg types are installed in this workspace yet
 import { Pool } from "pg";
 
 const pool = new Pool({
@@ -7,4 +8,3 @@ const pool = new Pool({
 });
 
 export const db = drizzle(pool);
-

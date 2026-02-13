@@ -1,13 +1,19 @@
-type EventHandler = (payload: any) => void;
+import type { EventName, EventPayloadMap } from "./events";
 
 class EventBus {
-  private handlers: Record<string, EventHandler[]> = {};
+  private handlers: {
+    [K in EventName]?: Array<(payload: EventPayloadMap[K]) => void | Promise<void>>;
+  } = {};
 
-  publish(event: string, payload: any) {
-    this.handlers[event]?.forEach((handler) => handler(payload));
+  async publish<K extends EventName>(event: K, payload: EventPayloadMap[K]) {
+    const handlers = this.handlers[event] ?? [];
+    await Promise.allSettled(handlers.map((handler) => handler(payload)));
   }
 
-  subscribe(event: string, handler: EventHandler) {
+  subscribe<K extends EventName>(
+    event: K,
+    handler: (payload: EventPayloadMap[K]) => void | Promise<void>,
+  ) {
     if (!this.handlers[event]) {
       this.handlers[event] = [];
     }

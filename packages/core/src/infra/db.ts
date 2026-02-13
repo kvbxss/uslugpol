@@ -1,1 +1,1 @@
-export { db } from "../../../shared/src/db";
+export { db } from "@repo/shared";

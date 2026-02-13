@@ -1,4 +1,4 @@
-import { eventBus, EventNames, type LeadCreatedPayload } from "../../../shared/src";
+import { eventBus, EventNames, type LeadCreatedPayload } from "@repo/shared";
 import { upsertEventLead } from "../application/eventLead.service";
 
 export function registerEventServiceHandlers() {
@@ -12,4 +12,3 @@ export function registerEventServiceHandlers() {
     });
   });
 }
-

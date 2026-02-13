@@ -2,10 +2,8 @@ import type { LeadCategory, LeadStatus } from "./types";
 
 export const EventNames = {
   LeadCreated: "core.lead.created",
-  LeadQualified: "core.lead.qualified",
+  LeadStatusChanged: "core.lead.status_changed",
   OpportunityDetected: "core.opportunity.detected",
-  LeadEnriched: "module.lead.enriched",
-  OpportunitySuggested: "module.opportunity.suggested",
 } as const;
 
 export type EventName = (typeof EventNames)[keyof typeof EventNames];
@@ -18,9 +16,11 @@ export type LeadCreatedPayload = {
   status: LeadStatus;
 };
 
-export type LeadQualifiedPayload = {
+export type LeadStatusChangedPayload = {
   leadId: string;
   category: LeadCategory;
+  from: LeadStatus;
+  to: LeadStatus;
 };
 
 export type OpportunityDetectedPayload = {
@@ -29,3 +29,8 @@ export type OpportunityDetectedPayload = {
   reason: string;
 };
 
+export type EventPayloadMap = {
+  [EventNames.LeadCreated]: LeadCreatedPayload;
+  [EventNames.LeadStatusChanged]: LeadStatusChangedPayload;
+  [EventNames.OpportunityDetected]: OpportunityDetectedPayload;
+};
