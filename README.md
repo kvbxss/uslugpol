@@ -1,109 +1,106 @@
-# Us�ugPOL - Modular Monolith (Zadanie Rekrutacyjne)
+# UsługPOL – Modular Monolith (Zadanie Rekrutacyjne)
 
 ## 1. Cel projektu
 
-Celem projektu jest **Core system** dla holdingu us�ugowego Us�ugPOL w architekturze **Modular Monolith** z wyra�nymi **Bounded Contexts**, zachowuj�c autonomi� sp�ek-c�rek i jednocze�nie wspieraj�c sprzeda� krzy�ow� (cross-sell).
+Celem projektu jest **Core system** dla holdingu usługowego UsługPOL w architekturze **Modular Monolith** z wyraźnymi **Bounded Contexts**, zachowując autonomię spółek‑córek i jednocześnie wspierając sprzedaż krzyżową (cross‑sell).
 
 Projekt realizuje MVP nastawione na:
 
-- centralne zarz�dzanie leadami,
-- asynchroniczn� komunikacj� zdarzeniow�,
-- izolacj� domen i danych,
-- gotowo�� do przysz�ego wydzielenia modu��w do mikroserwis�w.
+* centralne zarządzanie leadami,
+* asynchroniczną komunikację zdarzeniową,
+* izolację domen i danych,
+* gotowość do przyszłego wydzielenia modułów do mikroserwisów.
+
+---
 
 ## 2. Kontekst biznesowy
 
-Us�ugPOL to marka parasolowa obejmuj�ca trzy obszary:
+UsługPOL to marka parasolowa obejmująca trzy obszary:
 
-- sprz�tanie (`cleaning`),
-- organizacja imprez (`event`),
-- wynajem aut (`car`).
+* sprzątanie (`cleaning`),
+* organizacja imprez (`event`),
+* wynajem aut (`car`).
 
 Problem biznesowy:
 
-- zespo�y i dane s� rozdzielone,
-- klient widzi jedn� mark�,
-- brakuje mechanizmu wykrywania okazji cross-sell mi�dzy sp�kami.
+* zespoły i dane są rozdzielone,
+* klient widzi jedną markę,
+* brakuje mechanizmu wykrywania okazji cross‑sell między spółkami.
 
-Przyk�ad:
+Przykład:
 
-- lead eventowy oddalony od miasta/biura powinien generowa� sugesti� wynajmu aut.
+* lead eventowy oddalony od miasta/biura powinien generować sugestię wynajmu aut.
+
+---
 
 ## 3. Zakres zrealizowanego MVP
 
-## Core (`packages/core`)
+### Core (`packages/core`)
 
-- przyjmowanie lead�w z kana��w: `phone`, `email`, `form`,
-- kategoryzacja lead�w: `cleaning`, `event`, `car`,
-- statusy: `new -> qualified -> converted`,
-- rejestrowanie i publikacja zdarze� domenowych,
-- wykrywanie okazji cross-sell,
-- audyt dzia�a�.
+* przyjmowanie leadów z kanałów: `phone`, `email`, `form`,
+* kategoryzacja leadów: `cleaning`, `event`, `car`,
+* statusy: `new → qualified → converted`,
+* rejestrowanie i publikacja zdarzeń domenowych,
+* wykrywanie okazji cross‑sell,
+* audyt działań.
 
-## Event Service (`packages/event-service`)
+### Event Service (`packages/event-service`)
 
-- subskrypcja lead�w eventowych,
-- w�asny model danych `event_data`,
-- rozszerzenie danych o pola domenowe (`eventDate`, `location`, `eventType`, `guestCount`, `budget`),
-- zg�aszanie feedbacku do Core (opportunity).
+* subskrypcja leadów eventowych,
+* własny model danych `event_data`,
+* rozszerzenie danych o pola domenowe (`eventDate`, `location`, `eventType`, `guestCount`, `budget`),
+* zgłaszanie feedbacku do Core (opportunity).
 
-## Car Service (`packages/car-service`)
+### Car Service (`packages/car-service`)
 
-- subskrypcja lead�w car,
-- w�asny model danych `transport_requests`,
-- obs�uga propozycji cross-sell,
-- decyzje o akceptacji/odrzuceniu okazji.
+* subskrypcja leadów car,
+* własny model danych `transport_requests`,
+* obsługa propozycji cross‑sell,
+* decyzje o akceptacji/odrzuceniu okazji.
 
-## Web UI (`apps/web`)
+### Web UI (`apps/web`)
 
-- dashboard operacyjny dla MVP,
-- intake lead�w,
-- podgl�d lead�w i opportunities,
-- edycja danych event/car,
-- zmiana statusu leada.
+* dashboard operacyjny dla MVP,
+* intake leadów,
+* podgląd leadów i opportunities,
+* edycja danych event/car,
+* zmiana statusu leada.
+
+---
 
 ## 4. Architektura
 
-## Diagram architektury
+### Diagram architektury
 
 ```mermaid
 flowchart TB
 
-%% =========================
-%% MODULARNY MONOLIT
-%% =========================
-
-subgraph MONOLIT["Modularny Monolit - UslugPOL (Next.js + TypeScript)"]
+subgraph MONOLIT["Modularny Monolit – UsługPOL (Next.js + TypeScript)"]
 
     subgraph CORE["Kontekst: CORE (Orkiestracja)"]
-        LEAD_MGMT["Zarzadzanie Leadami"]
-        STATUS_FLOW["Obsluga statusow"]
+        LEAD_MGMT["Zarządzanie Leadami"]
+        STATUS_FLOW["Obsługa statusów"]
         CROSS_SELL["Silnik Cross-Sell"]
-        AUDYT["Rejestr zdarzen (Audyt)"]
-        EVENT_BUS["Magistrala Zdarzen (Event Bus)"]
+        AUDYT["Rejestr zdarzeń (Audyt)"]
+        EVENT_BUS["Magistrala Zdarzeń (Event Bus)"]
     end
 
-    subgraph CLEANING["Modul: Uslugi Sprzatania"]
+    subgraph CLEANING["Moduł: Usługi Sprzątania"]
         CLEANING_LOGIC["Logika domenowa"]
-        CLEANING_META["Wlasne dane rozszerzajace"]
+        CLEANING_META["Własne dane rozszerzające"]
     end
 
-    subgraph EVENT["Modul: Organizacja Imprez"]
+    subgraph EVENT["Moduł: Organizacja Imprez"]
         EVENT_LOGIC["Logika domenowa"]
-        EVENT_META["Wlasne dane rozszerzajace"]
+        EVENT_META["Własne dane rozszerzające"]
     end
 
-    subgraph CAR["Modul: Wynajem Aut"]
+    subgraph CAR["Moduł: Wynajem Aut"]
         CAR_LOGIC["Logika domenowa"]
-        CAR_META["Wlasne dane rozszerzajace"]
+        CAR_META["Własne dane rozszerzające"]
     end
 
 end
-
-
-%% =========================
-%% KOMUNIKACJA ZDARZENIOWA
-%% =========================
 
 LEAD_MGMT --> EVENT_BUS
 CROSS_SELL --> EVENT_BUS
@@ -115,11 +112,6 @@ EVENT_BUS --> CAR_LOGIC
 EVENT_LOGIC --> EVENT_BUS
 CLEANING_LOGIC --> EVENT_BUS
 CAR_LOGIC --> EVENT_BUS
-
-
-%% =========================
-%% BAZA DANYCH
-%% =========================
 
 subgraph DB["PostgreSQL (1 instancja)"]
 
@@ -152,66 +144,78 @@ EVENT_LOGIC --> T5
 CAR_LOGIC --> T6
 ```
 
-## Styl architektoniczny
+### Styl architektoniczny
 
-- **Modular Monolith** w monorepo (Turborepo),
-- wyra�ny podzia� na konteksty domenowe (`core`, `event-service`, `car-service`),
-- komunikacja przez kontrakty i eventy, nie przez bezpo�rednie zale�no�ci mi�dzy us�ugami.
+* **Modular Monolith** w monorepo (Turborepo),
+* wyraźny podział na konteksty domenowe (`core`, `event-service`, `car-service`),
+* komunikacja przez kontrakty i eventy, nie przez bezpośrednie zależności między usługami.
 
-## Komunikacja asynchroniczna
+### Komunikacja asynchroniczna
 
-- u�yty **in-memory EventBus** jako adapter MVP,
-- Core publikuje zdarzenia (`core.lead.created`, `core.lead.status_changed`, `core.opportunity.detected`),
-- modu�y domenowe subskrybuj� tylko potrzebne eventy,
-- architektura przygotowana do podmiany EventBus na zewn�trzny broker (np. Kafka) bez przebudowy logiki domenowej.
+* użyty **in-memory EventBus** jako adapter MVP,
+* Core publikuje zdarzenia (`core.lead.created`, `core.lead.status_changed`, `core.opportunity.detected`),
+* moduły domenowe subskrybują tylko potrzebne eventy,
+* architektura przygotowana do podmiany EventBus na zewnętrzny broker (np. Kafka) bez przebudowy logiki domenowej.
 
-## Izolacja i granice modu��w
+### Izolacja i granice modułów
 
-- Core nie zna szczeg��w implementacyjnych us�ug,
-- modu�y biznesowe nie powinny bezpo�rednio czyta� API/tabel innych modu��w,
-- dodatkowo zastosowano regu�y lint (`no-restricted-imports`) pilnuj�ce granic kontekst�w.
+* Core nie zna szczegółów implementacyjnych usług,
+* moduły biznesowe nie czytają bezpośrednio API/tabel innych modułów,
+* zastosowano reguły lint (`no-restricted-imports`) pilnujące granic kontekstów.
+
+---
 
 ## 5. Model danych i baza
 
-## PostgreSQL
+### PostgreSQL
 
-Jedna instancja PostgreSQL, logiczny podzia� na schematy:
+Jedna instancja PostgreSQL, logiczny podział na schematy:
 
-- `core`
-- `event_service`
-- `car_service`
+* `core`
+* `event_service`
+* `car_service`
+* `cleaning_service`
 
-## ORM i migracje
+### ORM i migracje
 
-- Drizzle ORM,
-- osobne konfiguracje migracji per bounded context:
-- `drizzle.core.config.ts`
-- `drizzle.event-service.config.ts`
-- `drizzle.car-service.config.ts`
+* Drizzle ORM,
+* osobne konfiguracje migracji per bounded context:
 
-## 6. Regu�y cross-sell (MVP)
+  * `drizzle.core.config.ts`
+  * `drizzle.event-service.config.ts`
+  * `drizzle.car-service.config.ts`
 
-Zaimplementowane regu�y obejmuj�:
+---
 
-- analiz� kontekstow� opisu/lokalizacji leada eventowego,
-- regu�� odleg�o�ci (`> 50 km`) dla sugestii `car`,
-- geolokalizacj� wzgl�dem biura (konfigurowalne ENV),
-- p�tl� feedbacku z modu�u event do Core (zg�oszenie potrzeby transportu).
+## 6. Reguły cross‑sell (MVP)
 
-## 7. Widoczno�� danych
+Zaimplementowane reguły obejmują:
 
-- Core: pe�ny wgl�d w leady i actions/audit.
-- Modu� domenowy: tylko w�asne dane + rekomendacje cross-sell przekazane przez Core.
-- Brak bezpo�redniej zale�no�ci domena->domena.
+* analizę kontekstową opisu/lokalizacji leada eventowego,
+* regułę odległości (`> 50 km`) dla sugestii `car`,
+* geolokalizację względem biura (konfigurowalne ENV),
+* pętlę feedbacku z modułu event do Core (zgłoszenie potrzeby transportu).
+
+---
+
+## 7. Widoczność danych
+
+* Core: pełny wgląd w leady i audit.
+* Moduł domenowy: tylko własne dane + rekomendacje cross‑sell przekazane przez Core.
+* Brak bezpośredniej zależności domena → domena.
+
+---
 
 ## 8. Stack technologiczny
 
-- Monorepo: **Turborepo**
-- Framework: **Next.js (App Router)**
-- J�zyk: **TypeScript**
-- DB: **PostgreSQL**
-- ORM: **Drizzle ORM**
-- UI: komponenty **ShadCN**
+* Monorepo: **Turborepo**
+* Framework: **Next.js (App Router)**
+* Język: **TypeScript**
+* DB: **PostgreSQL**
+* ORM: **Drizzle ORM**
+* UI: komponenty **ShadCN**
+
+---
 
 ## 9. Struktura repozytorium
 
@@ -219,24 +223,26 @@ Zaimplementowane regu�y obejmuj�:
 apps/
   web/                      # UI + endpointy App Router
 packages/
-  core/                     # orkiestracja lead�w, statusy, cross-sell, audit
+  core/                     # orkiestracja leadów, statusy, cross-sell, audit
   event-service/            # domena event
   car-service/              # domena car
   shared/                   # contracts, event bus, db bootstrap
-  cleaning-service/         # miejsce na dalszy rozw�j
+  cleaning-service/         # miejsce na dalszy rozwój
 ```
+
+---
 
 ## 10. Uruchomienie lokalne
 
-## Wymagania
+### Wymagania
 
-- Node.js 18+
-- npm 10+
-- Docker (dla Postgres)
+* Node.js 18+
+* npm 10+
+* Docker (dla PostgreSQL)
 
-## Kroki
+### Kroki
 
-1. Instalacja zale�no�ci:
+1. Instalacja zależności:
 
 ```sh
 npm install
@@ -251,7 +257,7 @@ docker compose up -d
 3. Konfiguracja `.env`:
 
 ```env
-DATABASE_URL= url bazy postgresql
+DATABASE_URL=<url_do_bazy_postgresql>
 USLUGPOL_DISTANCE_THRESHOLD_KM=50
 USLUGPOL_OFFICE_CITY=Krakow
 USLUGPOL_OFFICE_LAT=50.0647
@@ -272,7 +278,9 @@ npm run dev
 
 Aplikacja web: `http://localhost:4000`
 
-## 11. Najwa�niejsze komendy
+---
+
+## 11. Najważniejsze komendy
 
 ```sh
 npm run dev
@@ -285,29 +293,32 @@ npm run db:generate:all
 npm run db:migrate
 ```
 
-## 12. Mapa wymaga� -> implementacja
+---
 
-- Core lead management: ?
-- Kana�y intake + kategoryzacja: ?
-- Status workflow: ?
-- Extensibility przez dane domenowe poza Core: ?
-- Cross-sell engine: ?
-- Feedback loop z modu�u domenowego: ?
-- Asynchroniczna komunikacja event-driven: ? (adapter in-memory)
-- Podzia� DB na schematy: ?
-- Izolacja bounded contexts: ? (architektura + regu�y lint)
-- Dashboard MVP: ?
+## 12. Decyzje projektowe i kompromisy
 
-## 13. Decyzje projektowe i kompromisy
+* Wybrano in-memory EventBus dla szybkości MVP i czytelności architektury.
+* UI jest celowo operacyjne, nie produkcyjne.
+* Priorytetem była poprawna architektura i granice modułów, nie pełne pokrycie edge-case’ów.
 
-- Wybrano in-memory EventBus dla szybko�ci MVP i czytelno�ci architektury.
-- UI jest celowo operacyjne, nie produkcyjne.
-- Priorytetem by�a poprawna architektura i granice modu��w, nie pe�ne pokrycie edge-case��w.
+---
 
-## 14. Kierunki dalszego rozwoju
+## 13. Kierunki dalszego rozwoju
 
-- Podmiana EventBus na Kafka/RabbitMQ.
-- Outbox pattern dla gwarancji dostarczenia event�w.
-- Silniejsze RBAC i separacja widok�w per sp�ka.
-- Testy integracyjne cross-context.
-- Wydzielenie modu��w do mikroserwis�w bez zmiany kontrakt�w domenowych.
+* Podmiana EventBus na Kafka/RabbitMQ.
+* Outbox pattern dla gwarancji dostarczenia eventów.
+* Silniejsze RBAC i separacja widoków per spółka.
+* Testy integracyjne cross-context.
+* Wydzielenie modułów do mikroserwisów bez zmiany kontraktów domenowych.
+
+---
+
+## 14. Podsumowanie
+
+Projekt demonstruje:
+
+* świadome projektowanie modularnego monolitu,
+* separację kontekstów domenowych,
+* event‑driven orchestration,
+* gotowość do skalowania i wydzielenia mikroserwisów,
+* biznesowe podejście do problemu cross‑sell w holdingu.
