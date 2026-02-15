@@ -1,5 +1,7 @@
 # UsługPOL – Modular Monolith (Zadanie Rekrutacyjne)
 
+![alt text](uslugpol.png  "Makieta")
+
 ## 1. Cel projektu
 
 Celem projektu jest **Core system** dla holdingu usługowego UsługPOL w architekturze **Modular Monolith** z wyraźnymi **Bounded Contexts**, zachowując autonomię spółek‑córek i jednocześnie wspierając sprzedaż krzyżową (cross‑sell).
