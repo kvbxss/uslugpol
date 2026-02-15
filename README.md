@@ -1,54 +1,64 @@
-# Us³ugPOL - Modular Monolith (Zadanie Rekrutacyjne)
+# Usï¿½ugPOL - Modular Monolith (Zadanie Rekrutacyjne)
 
 ## 1. Cel projektu
-Celem projektu jest pokazanie, jak zaprojektowaæ i wdro¿yæ **Core system** dla holdingu us³ugowego Us³ugPOL w architekturze **Modular Monolith** z wyraŸnymi **Bounded Contexts**, zachowuj¹c autonomiê spó³ek-córek i jednoczeœnie wspieraj¹c sprzeda¿ krzy¿ow¹ (cross-sell).
+
+Celem projektu jest **Core system** dla holdingu usï¿½ugowego Usï¿½ugPOL w architekturze **Modular Monolith** z wyraï¿½nymi **Bounded Contexts**, zachowujï¿½c autonomiï¿½ spï¿½ek-cï¿½rek i jednoczeï¿½nie wspierajï¿½c sprzedaï¿½ krzyï¿½owï¿½ (cross-sell).
 
 Projekt realizuje MVP nastawione na:
-- centralne zarz¹dzanie leadami,
-- asynchroniczn¹ komunikacjê zdarzeniow¹,
-- izolacjê domen i danych,
-- gotowoœæ do przysz³ego wydzielenia modu³ów do mikroserwisów.
+
+- centralne zarzï¿½dzanie leadami,
+- asynchronicznï¿½ komunikacjï¿½ zdarzeniowï¿½,
+- izolacjï¿½ domen i danych,
+- gotowoï¿½ï¿½ do przyszï¿½ego wydzielenia moduï¿½ï¿½w do mikroserwisï¿½w.
 
 ## 2. Kontekst biznesowy
-Us³ugPOL to marka parasolowa obejmuj¹ca trzy obszary:
-- sprz¹tanie (`cleaning`),
+
+Usï¿½ugPOL to marka parasolowa obejmujï¿½ca trzy obszary:
+
+- sprzï¿½tanie (`cleaning`),
 - organizacja imprez (`event`),
 - wynajem aut (`car`).
 
 Problem biznesowy:
-- zespo³y i dane s¹ rozdzielone,
-- klient widzi jedn¹ markê,
-- brakuje mechanizmu wykrywania okazji cross-sell miêdzy spó³kami.
 
-Przyk³ad:
-- lead eventowy oddalony od miasta/biura powinien generowaæ sugestiê wynajmu aut.
+- zespoï¿½y i dane sï¿½ rozdzielone,
+- klient widzi jednï¿½ markï¿½,
+- brakuje mechanizmu wykrywania okazji cross-sell miï¿½dzy spï¿½kami.
+
+Przykï¿½ad:
+
+- lead eventowy oddalony od miasta/biura powinien generowaï¿½ sugestiï¿½ wynajmu aut.
 
 ## 3. Zakres zrealizowanego MVP
 
 ## Core (`packages/core`)
-- przyjmowanie leadów z kana³ów: `phone`, `email`, `form`,
-- kategoryzacja leadów: `cleaning`, `event`, `car`,
+
+- przyjmowanie leadï¿½w z kanaï¿½ï¿½w: `phone`, `email`, `form`,
+- kategoryzacja leadï¿½w: `cleaning`, `event`, `car`,
 - statusy: `new -> qualified -> converted`,
-- rejestrowanie i publikacja zdarzeñ domenowych,
+- rejestrowanie i publikacja zdarzeï¿½ domenowych,
 - wykrywanie okazji cross-sell,
-- audyt dzia³añ.
+- audyt dziaï¿½aï¿½.
 
 ## Event Service (`packages/event-service`)
-- subskrypcja leadów eventowych,
-- w³asny model danych `event_data`,
+
+- subskrypcja leadï¿½w eventowych,
+- wï¿½asny model danych `event_data`,
 - rozszerzenie danych o pola domenowe (`eventDate`, `location`, `eventType`, `guestCount`, `budget`),
-- zg³aszanie feedbacku do Core (opportunity).
+- zgï¿½aszanie feedbacku do Core (opportunity).
 
 ## Car Service (`packages/car-service`)
-- subskrypcja leadów car,
-- w³asny model danych `transport_requests`,
-- obs³uga propozycji cross-sell,
+
+- subskrypcja leadï¿½w car,
+- wï¿½asny model danych `transport_requests`,
+- obsï¿½uga propozycji cross-sell,
 - decyzje o akceptacji/odrzuceniu okazji.
 
 ## Web UI (`apps/web`)
+
 - dashboard operacyjny dla MVP,
-- intake leadów,
-- podgl¹d leadów i opportunities,
+- intake leadï¿½w,
+- podglï¿½d leadï¿½w i opportunities,
 - edycja danych event/car,
 - zmiana statusu leada.
 
@@ -143,89 +153,105 @@ CAR_LOGIC --> T6
 ```
 
 ## Styl architektoniczny
+
 - **Modular Monolith** w monorepo (Turborepo),
-- wyraŸny podzia³ na konteksty domenowe (`core`, `event-service`, `car-service`),
-- komunikacja przez kontrakty i eventy, nie przez bezpoœrednie zale¿noœci miêdzy us³ugami.
+- wyraï¿½ny podziaï¿½ na konteksty domenowe (`core`, `event-service`, `car-service`),
+- komunikacja przez kontrakty i eventy, nie przez bezpoï¿½rednie zaleï¿½noï¿½ci miï¿½dzy usï¿½ugami.
 
 ## Komunikacja asynchroniczna
-- u¿yty **in-memory EventBus** jako adapter MVP,
-- Core publikuje zdarzenia (`core.lead.created`, `core.lead.status_changed`, `core.opportunity.detected`),
-- modu³y domenowe subskrybuj¹ tylko potrzebne eventy,
-- architektura przygotowana do podmiany EventBus na zewnêtrzny broker (np. Kafka) bez przebudowy logiki domenowej.
 
-## Izolacja i granice modu³ów
-- Core nie zna szczegó³ów implementacyjnych us³ug,
-- modu³y biznesowe nie powinny bezpoœrednio czytaæ API/tabel innych modu³ów,
-- dodatkowo zastosowano regu³y lint (`no-restricted-imports`) pilnuj¹ce granic kontekstów.
+- uï¿½yty **in-memory EventBus** jako adapter MVP,
+- Core publikuje zdarzenia (`core.lead.created`, `core.lead.status_changed`, `core.opportunity.detected`),
+- moduï¿½y domenowe subskrybujï¿½ tylko potrzebne eventy,
+- architektura przygotowana do podmiany EventBus na zewnï¿½trzny broker (np. Kafka) bez przebudowy logiki domenowej.
+
+## Izolacja i granice moduï¿½ï¿½w
+
+- Core nie zna szczegï¿½ï¿½w implementacyjnych usï¿½ug,
+- moduï¿½y biznesowe nie powinny bezpoï¿½rednio czytaï¿½ API/tabel innych moduï¿½ï¿½w,
+- dodatkowo zastosowano reguï¿½y lint (`no-restricted-imports`) pilnujï¿½ce granic kontekstï¿½w.
 
 ## 5. Model danych i baza
 
 ## PostgreSQL
-Jedna instancja PostgreSQL, logiczny podzia³ na schematy:
+
+Jedna instancja PostgreSQL, logiczny podziaï¿½ na schematy:
+
 - `core`
 - `event_service`
 - `car_service`
 
 ## ORM i migracje
+
 - Drizzle ORM,
 - osobne konfiguracje migracji per bounded context:
 - `drizzle.core.config.ts`
 - `drizzle.event-service.config.ts`
 - `drizzle.car-service.config.ts`
 
-## 6. Regu³y cross-sell (MVP)
-Zaimplementowane regu³y obejmuj¹:
-- analizê kontekstow¹ opisu/lokalizacji leada eventowego,
-- regu³ê odleg³oœci (`> 50 km`) dla sugestii `car`,
-- geolokalizacjê wzglêdem biura (konfigurowalne ENV),
-- pêtlê feedbacku z modu³u event do Core (zg³oszenie potrzeby transportu).
+## 6. Reguï¿½y cross-sell (MVP)
 
-## 7. Widocznoœæ danych
-- Core: pe³ny wgl¹d w leady i actions/audit.
-- Modu³ domenowy: tylko w³asne dane + rekomendacje cross-sell przekazane przez Core.
-- Brak bezpoœredniej zale¿noœci domena->domena.
+Zaimplementowane reguï¿½y obejmujï¿½:
+
+- analizï¿½ kontekstowï¿½ opisu/lokalizacji leada eventowego,
+- reguï¿½ï¿½ odlegï¿½oï¿½ci (`> 50 km`) dla sugestii `car`,
+- geolokalizacjï¿½ wzglï¿½dem biura (konfigurowalne ENV),
+- pï¿½tlï¿½ feedbacku z moduï¿½u event do Core (zgï¿½oszenie potrzeby transportu).
+
+## 7. Widocznoï¿½ï¿½ danych
+
+- Core: peï¿½ny wglï¿½d w leady i actions/audit.
+- Moduï¿½ domenowy: tylko wï¿½asne dane + rekomendacje cross-sell przekazane przez Core.
+- Brak bezpoï¿½redniej zaleï¿½noï¿½ci domena->domena.
 
 ## 8. Stack technologiczny
+
 - Monorepo: **Turborepo**
 - Framework: **Next.js (App Router)**
-- Jêzyk: **TypeScript**
+- Jï¿½zyk: **TypeScript**
 - DB: **PostgreSQL**
 - ORM: **Drizzle ORM**
-- UI: komponenty stylu **ShadCN-like** (lokalne komponenty UI)
+- UI: komponenty **ShadCN**
 
 ## 9. Struktura repozytorium
+
 ```txt
 apps/
   web/                      # UI + endpointy App Router
 packages/
-  core/                     # orkiestracja leadów, statusy, cross-sell, audit
+  core/                     # orkiestracja leadï¿½w, statusy, cross-sell, audit
   event-service/            # domena event
   car-service/              # domena car
   shared/                   # contracts, event bus, db bootstrap
-  cleaning-service/         # miejsce na dalszy rozwój
+  cleaning-service/         # miejsce na dalszy rozwï¿½j
 ```
 
 ## 10. Uruchomienie lokalne
 
 ## Wymagania
+
 - Node.js 18+
 - npm 10+
 - Docker (dla Postgres)
 
 ## Kroki
-1. Instalacja zale¿noœci:
+
+1. Instalacja zaleï¿½noï¿½ci:
+
 ```sh
 npm install
 ```
 
 2. Uruchomienie PostgreSQL:
+
 ```sh
 docker compose up -d
 ```
 
 3. Konfiguracja `.env`:
+
 ```env
-DATABASE_URL=postgres://postgres:postgres@localhost:5432/uslugpol
+DATABASE_URL= url bazy postgresql
 USLUGPOL_DISTANCE_THRESHOLD_KM=50
 USLUGPOL_OFFICE_CITY=Krakow
 USLUGPOL_OFFICE_LAT=50.0647
@@ -233,18 +259,21 @@ USLUGPOL_OFFICE_LON=19.9450
 ```
 
 4. Migracje:
+
 ```sh
 npm run db:migrate
 ```
 
 5. Start aplikacji:
+
 ```sh
 npm run dev
 ```
 
 Aplikacja web: `http://localhost:4000`
 
-## 11. Najwa¿niejsze komendy
+## 11. Najwaï¿½niejsze komendy
+
 ```sh
 npm run dev
 npm run build
@@ -256,27 +285,29 @@ npm run db:generate:all
 npm run db:migrate
 ```
 
-## 12. Mapa wymagañ -> implementacja
+## 12. Mapa wymagaï¿½ -> implementacja
+
 - Core lead management: ?
-- Kana³y intake + kategoryzacja: ?
+- Kanaï¿½y intake + kategoryzacja: ?
 - Status workflow: ?
 - Extensibility przez dane domenowe poza Core: ?
 - Cross-sell engine: ?
-- Feedback loop z modu³u domenowego: ?
+- Feedback loop z moduï¿½u domenowego: ?
 - Asynchroniczna komunikacja event-driven: ? (adapter in-memory)
-- Podzia³ DB na schematy: ?
-- Izolacja bounded contexts: ? (architektura + regu³y lint)
+- Podziaï¿½ DB na schematy: ?
+- Izolacja bounded contexts: ? (architektura + reguï¿½y lint)
 - Dashboard MVP: ?
 
 ## 13. Decyzje projektowe i kompromisy
-- Wybrano in-memory EventBus dla szybkoœci MVP i czytelnoœci architektury.
+
+- Wybrano in-memory EventBus dla szybkoï¿½ci MVP i czytelnoï¿½ci architektury.
 - UI jest celowo operacyjne, nie produkcyjne.
-- Priorytetem by³a poprawna architektura i granice modu³ów, nie pe³ne pokrycie edge-case’ów.
+- Priorytetem byï¿½a poprawna architektura i granice moduï¿½ï¿½w, nie peï¿½ne pokrycie edge-caseï¿½ï¿½w.
 
 ## 14. Kierunki dalszego rozwoju
-- Podmiana EventBus na Kafka/RabbitMQ.
-- Outbox pattern dla gwarancji dostarczenia eventów.
-- Silniejsze RBAC i separacja widoków per spó³ka.
-- Testy integracyjne cross-context.
-- Wydzielenie modu³ów do mikroserwisów bez zmiany kontraktów domenowych.
 
+- Podmiana EventBus na Kafka/RabbitMQ.
+- Outbox pattern dla gwarancji dostarczenia eventï¿½w.
+- Silniejsze RBAC i separacja widokï¿½w per spï¿½ka.
+- Testy integracyjne cross-context.
+- Wydzielenie moduï¿½ï¿½w do mikroserwisï¿½w bez zmiany kontraktï¿½w domenowych.
