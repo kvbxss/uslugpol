@@ -4,7 +4,7 @@
 
 Celem projektu jest **Core system** dla holdingu usługowego UsługPOL w architekturze **Modular Monolith** z wyraźnymi **Bounded Contexts**, zachowując autonomię spółek‑córek i jednocześnie wspierając sprzedaż krzyżową (cross‑sell).
 
-Projekt realizuje MVP nastawione na:
+Zrealizowano w MVP:
 
 * centralne zarządzanie leadami,
 * asynchroniczną komunikację zdarzeniową,
