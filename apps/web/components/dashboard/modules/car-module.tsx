@@ -3,6 +3,13 @@ import { Badge } from "../../ui/badge";
 import { Button } from "../../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../../ui/card";
 
+function mapOpportunityStatus(status: string) {
+  if (status === "open") return "otwarta";
+  if (status === "accepted") return "zaakceptowana";
+  if (status === "rejected") return "odrzucona";
+  return status;
+}
+
 type CarLeadRow = {
   id: string;
   leadId: string;
@@ -29,18 +36,18 @@ export function CarModule({
   decideOpportunityAction: (formData: FormData) => Promise<void>;
 }) {
   return (
-    <Card id="car-panel">
+    <Card id="car-panel" className="bw-panel-card">
       <CardHeader className="bw-panel-header">
-        <CardTitle>Car Service</CardTitle>
-        <div className="bw-user-pill">Admin</div>
+        <CardTitle>Modul Transport</CardTitle>
+        <div className="bw-user-pill">Administrator</div>
       </CardHeader>
       <CardContent className="bw-panel-content">
-        <h3 className="bw-subtitle">Leady car</h3>
+        <h3 className="bw-subtitle">Leady transportowe</h3>
         <div className="bw-table-wrap">
           <table className="bw-table">
             <thead>
               <tr>
-                <th>Lead ID</th>
+                <th>ID leada</th>
                 <th>Liczba osob</th>
                 <th>Miejsce odbioru</th>
                 <th>Akcja</th>
@@ -75,7 +82,7 @@ export function CarModule({
           <table className="bw-table">
             <thead>
               <tr>
-                <th>Lead ID</th>
+                <th>ID leada</th>
                 <th>Powod</th>
                 <th>Status</th>
               </tr>
@@ -98,7 +105,7 @@ export function CarModule({
                         </Button>
                       </form>
                     ) : (
-                      <Badge>{item.status}</Badge>
+                      <Badge>{mapOpportunityStatus(item.status)}</Badge>
                     )}
                   </td>
                 </tr>

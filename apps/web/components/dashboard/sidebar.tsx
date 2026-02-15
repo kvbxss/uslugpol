@@ -1,24 +1,33 @@
 export function DashboardSidebar() {
   return (
     <aside className="bw-sidebar">
-      <div className="bw-brand">
-        <span className="bw-logo-dot" />
-        <span>UslugPOL</span>
+      <div className="bw-sidebar-top">
+        <div className="bw-brand">
+          <span className="bw-logo-dot" />
+          <span>UslugPOL</span>
+        </div>
+
+        <div className="bw-nav-group">
+          <nav className="bw-nav">
+            <a className="bw-nav-item bw-nav-item-active">
+              <span className="bw-nav-dot" />
+              Modul Core
+            </a>
+            <a className="bw-nav-item">
+              <span className="bw-nav-dot" />
+              Modul Event
+            </a>
+            <a className="bw-nav-item">
+              <span className="bw-nav-dot" />
+              Modul Sprzatanie
+            </a>
+            <a className="bw-nav-item">
+              <span className="bw-nav-dot" />
+              Modul Transport
+            </a>
+          </nav>
+        </div>
       </div>
-      <nav className="bw-nav">
-        <a className="bw-nav-item bw-nav-item-active" href="#core-panel">
-          Core
-        </a>
-        <a className="bw-nav-item" href="#event-panel">
-          Event
-        </a>
-        <a className="bw-nav-item" href="#cleaning-panel">
-          Cleaning
-        </a>
-        <a className="bw-nav-item" href="#car-panel">
-          Car
-        </a>
-      </nav>
     </aside>
   );
 }
