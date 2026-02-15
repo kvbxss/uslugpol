@@ -4,11 +4,21 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
-    "lint": "turbo run lint",
+    "lint": "turbo run lint && eslint packages/core/src packages/event-service/src packages/car-service/src --ext .ts,.tsx --quiet",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "check-types": "turbo run check-types"
+    "check-types": "turbo run check-types",
+    "db:generate:core": "drizzle-kit generate --config drizzle.core.config.ts",
+    "db:generate:event-service": "drizzle-kit generate --config drizzle.event-service.config.ts",
+    "db:generate:car-service": "drizzle-kit generate --config drizzle.car-service.config.ts",
+    "db:generate": "npm run db:generate:core",
+    "db:generate:all": "npm run db:generate:core && npm run db:generate:event-service && npm run db:generate:car-service",
+    "db:migrate:core": "drizzle-kit migrate --config drizzle.core.config.ts",
+    "db:migrate:event-service": "drizzle-kit migrate --config drizzle.event-service.config.ts",
+    "db:migrate:car-service": "drizzle-kit migrate --config drizzle.car-service.config.ts",
+    "db:migrate": "npm run db:migrate:core && npm run db:migrate:event-service && npm run db:migrate:car-service"
   },
   "devDependencies": {
+    "@types/pg": "^8.16.0",
     "prettier": "^3.7.4",
     "turbo": "^2.8.7",
     "typescript": "5.9.2"
