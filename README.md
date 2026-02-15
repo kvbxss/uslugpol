@@ -1,4 +1,4 @@
-# UsługPOL – Modular Monolith (Zadanie Rekrutacyjne)
+# UsługPOL – Modular Monolith (Core + Cross-Sell Engine)
 
 ![alt text](uslugpol.png  "Makieta")
 
