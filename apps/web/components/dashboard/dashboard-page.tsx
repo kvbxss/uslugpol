@@ -13,7 +13,7 @@ import Link from "next/link";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Input } from "../ui/input";
-import { Select } from "../ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Textarea } from "../ui/textarea";
 import { initializeModules } from "../../src/bootstrap";
 import { CarModule } from "./modules/car-module";
@@ -293,17 +293,27 @@ export async function DashboardPage({
                 <label className="field">
                   <span>Kanal</span>
                   <Select name="channel" defaultValue="form">
-                    <option value="form">form</option>
-                    <option value="email">email</option>
-                    <option value="phone">phone</option>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Wybierz kanal" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="form">form</SelectItem>
+                      <SelectItem value="email">email</SelectItem>
+                      <SelectItem value="phone">phone</SelectItem>
+                    </SelectContent>
                   </Select>
                 </label>
                 <label className="field">
                   <span>Kategoria</span>
                   <Select name="category" defaultValue="event">
-                    <option value="event">event</option>
-                    <option value="car">car</option>
-                    <option value="cleaning">cleaning</option>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Wybierz kategorie" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="event">event</SelectItem>
+                      <SelectItem value="car">car</SelectItem>
+                      <SelectItem value="cleaning">cleaning</SelectItem>
+                    </SelectContent>
                   </Select>
                 </label>
                 <label className="field">

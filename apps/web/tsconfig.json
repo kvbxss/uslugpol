@@ -8,6 +8,7 @@
       }
     ],
     "paths": {
+      "@/*": ["apps/web/*"],
       "@repo/core": ["packages/core/src/index.ts"],
       "@repo/core/*": ["packages/core/src/*"],
       "@repo/event-service": ["packages/event-service/src/index.ts"],

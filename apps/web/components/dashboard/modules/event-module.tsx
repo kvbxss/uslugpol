@@ -3,7 +3,7 @@ import { Badge } from "../../ui/badge";
 import { Button } from "../../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../../ui/card";
 import { Input } from "../../ui/input";
-import { Select } from "../../ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../ui/select";
 
 type EventLeadRow = {
   id: string;
@@ -19,6 +19,8 @@ export function EventModule({
   eventLeads: EventLeadRow[];
   reportOpportunityAction: (formData: FormData) => Promise<void>;
 }) {
+  const firstEventLeadId = eventLeads[0]?.leadId ?? "";
+
   return (
     <Card id="event-panel">
       <CardHeader className="bw-panel-header">
@@ -61,17 +63,22 @@ export function EventModule({
           <input type="hidden" name="returnPath" value={basePath} />
           <label className="field">
             <span>Lead eventowy</span>
-            <Select name="leadId" defaultValue={eventLeads[0]?.leadId ?? ""} required>
-              {eventLeads.length ? (
-                eventLeads.slice(0, 8).map((lead) => (
-                  <option key={lead.id} value={lead.leadId}>
-                    {lead.leadId.slice(0, 6)}
-                  </option>
-                ))
-              ) : (
-                <option value="">Brak leadow eventowych</option>
-              )}
-            </Select>
+            {eventLeads.length ? (
+              <Select name="leadId" defaultValue={firstEventLeadId} required>
+                <SelectTrigger>
+                  <SelectValue placeholder="Wybierz lead" />
+                </SelectTrigger>
+                <SelectContent>
+                  {eventLeads.slice(0, 8).map((lead) => (
+                    <SelectItem key={lead.id} value={lead.leadId}>
+                      {lead.leadId.slice(0, 6)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            ) : (
+              <Input value="Brak leadow eventowych" readOnly />
+            )}
           </label>
           <label className="field">
             <span>Liczba osob do transportu</span>
