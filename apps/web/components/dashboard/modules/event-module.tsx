@@ -22,18 +22,18 @@ export function EventModule({
   const firstEventLeadId = eventLeads[0]?.leadId ?? "";
 
   return (
-    <Card id="event-panel">
+    <Card id="event-panel" className="bw-panel-card">
       <CardHeader className="bw-panel-header">
-        <CardTitle>Event Service</CardTitle>
-        <div className="bw-user-pill">Admin</div>
+        <CardTitle>Modul Event</CardTitle>
+        <div className="bw-user-pill">Administrator</div>
       </CardHeader>
       <CardContent className="bw-panel-content">
-        <h3 className="bw-subtitle">Event Leads</h3>
+        <h3 className="bw-subtitle">Leady eventowe</h3>
         <div className="bw-table-wrap">
           <table className="bw-table">
             <thead>
               <tr>
-                <th>Lead ID</th>
+                <th>ID leada</th>
                 <th>Status</th>
                 <th>Akcja</th>
               </tr>
@@ -58,7 +58,7 @@ export function EventModule({
           </table>
         </div>
 
-        <h3 className="bw-subtitle">Feedback cross-sell do Core</h3>
+        <h3 className="bw-subtitle">Informacja cross-sell do modulu Core</h3>
         <form action={reportOpportunityAction} className="bw-feedback-form">
           <input type="hidden" name="returnPath" value={basePath} />
           <label className="field">
@@ -85,7 +85,7 @@ export function EventModule({
             <Input name="passengers" placeholder="np. 20" defaultValue="20" />
           </label>
           <Button size="sm" type="submit" disabled={!eventLeads.length}>
-            Zglos do Core
+            Zglos do modulu Core
           </Button>
         </form>
       </CardContent>

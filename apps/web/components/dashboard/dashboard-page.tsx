@@ -6,14 +6,25 @@ import {
   getOpportunitiesByTargetService,
   intakeLead,
 } from "@repo/core";
-import { getCarLeadByLeadId, getCarLeads, upsertCarLead, updateCarLead } from "@repo/car-service";
+import {
+  getCarLeadByLeadId,
+  getCarLeads,
+  upsertCarLead,
+  updateCarLead,
+} from "@repo/car-service";
 import { getEventLeads, updateEventLead } from "@repo/event-service";
 import { revalidatePath } from "next/cache";
 import Link from "next/link";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Input } from "../ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
 import { Textarea } from "../ui/textarea";
 import { initializeModules } from "../../src/bootstrap";
 import { CarModule } from "./modules/car-module";
@@ -82,7 +93,7 @@ async function createLeadAction(formData: FormData) {
       category: categoryOverride,
       raw: {
         from: "client@manual.local",
-        subject: "Dashboard intake",
+        subject: "Przyjecie z panelu",
         message: description,
         location: location || "nie podano",
       },
@@ -117,8 +128,8 @@ async function reportOpportunityAction(formData: FormData) {
 
   const reason =
     Number.isFinite(passengers) && passengers > 0
-      ? `Feedback modulu event: potrzebujemy transportu dla ${passengers} osob.`
-      : "Feedback modulu event: potrzebujemy transportu.";
+      ? `Informacja z modulu event: potrzebujemy transportu dla ${passengers} osob.`
+      : "Informacja z modulu event: potrzebujemy transportu.";
 
   await createOpportunity({
     leadId,
@@ -144,7 +155,11 @@ async function decideOpportunityAction(formData: FormData) {
     return;
   }
 
-  const opportunity = await decideOpportunity(opportunityId, decision, "car-ui");
+  const opportunity = await decideOpportunity(
+    opportunityId,
+    decision,
+    "car-ui",
+  );
   if (decision === "accepted") {
     const existingCarLead = await getCarLeadByLeadId(opportunity.leadId);
     if (!existingCarLead) {
@@ -212,31 +227,66 @@ export async function DashboardPage({
   basePath: string;
 }) {
   initializeModules();
-  const [leads, opportunities, eventLeads, carOpportunities, carLeads] = await Promise.all([
-    getLeads(),
-    getOpportunities(),
-    getEventLeads(),
-    getOpportunitiesByTargetService("car"),
-    getCarLeads(),
-  ]);
+  const [leads, opportunities, eventLeads, carOpportunities, carLeads] =
+    await Promise.all([
+      getLeads(),
+      getOpportunities(),
+      getEventLeads(),
+      getOpportunitiesByTargetService("car"),
+      getCarLeads(),
+    ]);
 
   const stats = {
     newCount: leads.filter((lead) => lead.status === "new").length,
     qualifiedCount: leads.filter((lead) => lead.status === "qualified").length,
     convertedCount: leads.filter((lead) => lead.status === "converted").length,
     opportunitiesToday: opportunities.filter((item) =>
-      item.createdAt ? item.createdAt.toISOString().slice(0, 10) === new Date().toISOString().slice(0, 10) : false,
+      item.createdAt
+        ? item.createdAt.toISOString().slice(0, 10) ===
+          new Date().toISOString().slice(0, 10)
+        : false,
     ).length,
   };
 
-  const selectedEventLead = editEventId ? eventLeads.find((lead) => lead.id === editEventId) : null;
-  const selectedCarLead = editCarId ? carLeads.find((lead) => lead.id === editCarId) : null;
+  const selectedEventLead = editEventId
+    ? eventLeads.find((lead) => lead.id === editEventId)
+    : null;
+  const selectedCarLead = editCarId
+    ? carLeads.find((lead) => lead.id === editCarId)
+    : null;
+  const isModalOpen = Boolean(
+    isAddLeadOpen || selectedEventLead || selectedCarLead,
+  );
 
   return (
     <main className="bw-layout">
       <DashboardSidebar />
 
       <section className="bw-content">
+        <div className="bw-hero">
+          <div>
+            <p className="bw-hero-kicker">Orkiestracja leadow</p>
+            <h1 className="bw-hero-title">Centrum operacyjne</h1>
+            <p className="bw-hero-subtitle">
+              Jeden widok do kontroli core oraz poszczególnych modułów.
+            </p>
+          </div>
+          <div className="bw-chip-list" aria-label="Kluczowe metryki">
+            <span className="bw-chip">
+              Nowe <strong>{stats.newCount}</strong>
+            </span>
+            <span className="bw-chip">
+              Zakwalifikowane <strong>{stats.qualifiedCount}</strong>
+            </span>
+            <span className="bw-chip">
+              Skonwertowane <strong>{stats.convertedCount}</strong>
+            </span>
+            <span className="bw-chip">
+              Dzis <strong>{stats.opportunitiesToday}</strong>
+            </span>
+          </div>
+        </div>
+
         <CoreModule
           basePath={basePath}
           stats={stats}
@@ -260,7 +310,10 @@ export async function DashboardPage({
         <div className="bw-right-column">
           <EventModule
             basePath={basePath}
-            eventLeads={eventLeads.map((lead) => ({ id: lead.id, leadId: lead.leadId }))}
+            eventLeads={eventLeads.map((lead) => ({
+              id: lead.id,
+              leadId: lead.leadId,
+            }))}
             reportOpportunityAction={reportOpportunityAction}
           />
           <CarModule
@@ -282,6 +335,10 @@ export async function DashboardPage({
           <CleaningModule />
         </div>
 
+        {isModalOpen ? (
+          <div className="bw-content-backdrop" aria-hidden />
+        ) : null}
+
         {isAddLeadOpen ? (
           <Card className="bw-modal-card">
             <CardHeader>
@@ -297,9 +354,9 @@ export async function DashboardPage({
                       <SelectValue placeholder="Wybierz kanal" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="form">form</SelectItem>
-                      <SelectItem value="email">email</SelectItem>
-                      <SelectItem value="phone">phone</SelectItem>
+                      <SelectItem value="form">formularz</SelectItem>
+                      <SelectItem value="email">e-mail</SelectItem>
+                      <SelectItem value="phone">telefon</SelectItem>
                     </SelectContent>
                   </Select>
                 </label>
@@ -311,8 +368,8 @@ export async function DashboardPage({
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="event">event</SelectItem>
-                      <SelectItem value="car">car</SelectItem>
-                      <SelectItem value="cleaning">cleaning</SelectItem>
+                      <SelectItem value="car">transport</SelectItem>
+                      <SelectItem value="cleaning">sprzatanie</SelectItem>
                     </SelectContent>
                   </Select>
                 </label>
@@ -322,7 +379,10 @@ export async function DashboardPage({
                 </label>
                 <label className="field">
                   <span>Opis</span>
-                  <Textarea name="description" defaultValue="Corporate party in Krakow" />
+                  <Textarea
+                    name="description"
+                    defaultValue="Impreza firmowa w Krakowie"
+                  />
                 </label>
                 <div className="bw-modal-actions">
                   <Link href={basePath}>
@@ -340,7 +400,7 @@ export async function DashboardPage({
         {selectedEventLead ? (
           <Card className="bw-modal-card">
             <CardHeader>
-              <CardTitle>Edytuj lead event</CardTitle>
+              <CardTitle>Edytuj lead eventowy</CardTitle>
             </CardHeader>
             <CardContent>
               <form action={updateEventLeadAction} className="lead-form">
@@ -348,23 +408,42 @@ export async function DashboardPage({
                 <input type="hidden" name="returnPath" value={basePath} />
                 <label className="field">
                   <span>Data eventu</span>
-                  <Input type="date" name="eventDate" defaultValue={selectedEventLead.eventDate ?? ""} />
+                  <Input
+                    type="date"
+                    name="eventDate"
+                    defaultValue={selectedEventLead.eventDate ?? ""}
+                  />
                 </label>
                 <label className="field">
                   <span>Lokalizacja eventu</span>
-                  <Input name="location" defaultValue={selectedEventLead.location ?? ""} />
+                  <Input
+                    name="location"
+                    defaultValue={selectedEventLead.location ?? ""}
+                  />
                 </label>
                 <label className="field">
                   <span>Typ eventu</span>
-                  <Input name="eventType" defaultValue={selectedEventLead.eventType ?? ""} />
+                  <Input
+                    name="eventType"
+                    defaultValue={selectedEventLead.eventType ?? ""}
+                  />
                 </label>
                 <label className="field">
                   <span>Liczba gosci</span>
-                  <Input type="number" name="guestCount" defaultValue={selectedEventLead.guestCount ?? ""} />
+                  <Input
+                    type="number"
+                    name="guestCount"
+                    defaultValue={selectedEventLead.guestCount ?? ""}
+                  />
                 </label>
                 <label className="field">
                   <span>Budzet</span>
-                  <Input type="number" step="0.01" name="budget" defaultValue={selectedEventLead.budget ?? ""} />
+                  <Input
+                    type="number"
+                    step="0.01"
+                    name="budget"
+                    defaultValue={selectedEventLead.budget ?? ""}
+                  />
                 </label>
                 <div className="bw-modal-actions">
                   <Link href={basePath}>
@@ -382,7 +461,7 @@ export async function DashboardPage({
         {selectedCarLead ? (
           <Card className="bw-modal-card">
             <CardHeader>
-              <CardTitle>Edytuj lead car</CardTitle>
+              <CardTitle>Edytuj lead transportowy</CardTitle>
             </CardHeader>
             <CardContent>
               <form action={updateCarLeadAction} className="lead-form">
@@ -390,19 +469,33 @@ export async function DashboardPage({
                 <input type="hidden" name="returnPath" value={basePath} />
                 <label className="field">
                   <span>Typ pojazdu</span>
-                  <Input name="vehicleType" defaultValue={selectedCarLead.vehicleType ?? ""} />
+                  <Input
+                    name="vehicleType"
+                    defaultValue={selectedCarLead.vehicleType ?? ""}
+                  />
                 </label>
                 <label className="field">
                   <span>Liczba osob</span>
-                  <Input type="number" name="passengers" defaultValue={selectedCarLead.passengers ?? ""} />
+                  <Input
+                    type="number"
+                    name="passengers"
+                    defaultValue={selectedCarLead.passengers ?? ""}
+                  />
                 </label>
                 <label className="field">
                   <span>Dystans (km)</span>
-                  <Input type="number" name="distanceKm" defaultValue={selectedCarLead.distanceKm ?? ""} />
+                  <Input
+                    type="number"
+                    name="distanceKm"
+                    defaultValue={selectedCarLead.distanceKm ?? ""}
+                  />
                 </label>
                 <label className="field">
                   <span>Miejsce odbioru</span>
-                  <Input name="pickupLocation" defaultValue={selectedCarLead.pickupLocation ?? ""} />
+                  <Input
+                    name="pickupLocation"
+                    defaultValue={selectedCarLead.pickupLocation ?? ""}
+                  />
                 </label>
                 <div className="bw-modal-actions">
                   <Link href={basePath}>

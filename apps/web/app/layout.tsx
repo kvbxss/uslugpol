@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Manrope } from "next/font/google";
+import { Manrope, Sora } from "next/font/google";
 import "./globals.css";
 
 const manrope = Manrope({
@@ -8,9 +8,15 @@ const manrope = Manrope({
   display: "swap",
 });
 
+const sora = Sora({
+  subsets: ["latin"],
+  variable: "--font-sora",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
-  title: "UslugPOL Dashboard",
-  description: "Minimalistyczny panel leadow",
+  title: "UslugPOL Panel",
+  description: "Nowoczesny panel operacyjny leadow",
 };
 
 export default function RootLayout({
@@ -20,7 +26,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pl">
-      <body className={manrope.variable}>
+      <body className={`${manrope.variable} ${sora.variable}`}>
         {children}
       </body>
     </html>

@@ -23,6 +23,34 @@ type Params = {
   id: string;
 };
 
+function mapLeadStatus(status: string) {
+  if (status === "new") return "nowy";
+  if (status === "qualified") return "zakwalifikowany";
+  if (status === "converted") return "skonwertowany";
+  return status;
+}
+
+function mapOpportunityStatus(status: string) {
+  if (status === "open") return "otwarta";
+  if (status === "accepted") return "zaakceptowana";
+  if (status === "rejected") return "odrzucona";
+  return status;
+}
+
+function mapCategory(category: string) {
+  if (category === "event") return "event";
+  if (category === "car") return "transport";
+  if (category === "cleaning") return "sprzatanie";
+  return category;
+}
+
+function mapChannel(channel: string) {
+  if (channel === "form") return "formularz";
+  if (channel === "email") return "e-mail";
+  if (channel === "phone") return "telefon";
+  return channel;
+}
+
 async function updateStatusAction(formData: FormData) {
   "use server";
   initializeModules();
@@ -60,13 +88,21 @@ export default async function LeadDetailPage({
 
   return (
     <main className="dashboard-shell lead-shell">
-      <Link className="link" href="/">
-        Powrot
+      <Link className="link lead-back-link" href="/">
+        Powrot do dashboardu
       </Link>
+
+      <header className="lead-hero">
+        <p className="lead-kicker">Szczegoly leada</p>
+        <h1 className="lead-title">
+          {mapCategory(lead.category)} #{lead.id.slice(0, 8)}
+        </h1>
+        <p className="lead-subtitle">Kontrola statusu i okazji cross-sell dla pojedynczego rekordu.</p>
+      </header>
 
       <Card>
         <CardHeader>
-          <CardTitle>Lead detail</CardTitle>
+          <CardTitle>Podstawowe informacje</CardTitle>
           <CardDescription>
             Podstawowe informacje i zmiana statusu.
           </CardDescription>
@@ -79,17 +115,17 @@ export default async function LeadDetailPage({
             </div>
             <div className="detail-item">
               <dt>Kategoria</dt>
-              <dd>{lead.category}</dd>
+              <dd>{mapCategory(lead.category)}</dd>
             </div>
             <div className="detail-item">
               <dt>Status</dt>
               <dd>
-                <Badge>{lead.status}</Badge>
+                <Badge>{mapLeadStatus(lead.status)}</Badge>
               </dd>
             </div>
             <div className="detail-item">
               <dt>Kanal</dt>
-              <dd>{lead.channel}</dd>
+              <dd>{mapChannel(lead.channel)}</dd>
             </div>
             <div className="detail-item">
               <dt>Lokalizacja</dt>
@@ -100,7 +136,7 @@ export default async function LeadDetailPage({
               <dd>{lead.description ?? "-"}</dd>
             </div>
             <div className="detail-item">
-              <dt>Source</dt>
+              <dt>Zrodlo</dt>
               <dd>{lead.source ? JSON.stringify(lead.source) : "-"}</dd>
             </div>
           </dl>
@@ -116,13 +152,13 @@ export default async function LeadDetailPage({
             <input type="hidden" name="leadId" value={lead.id} />
             <Input
               name="changedBy"
-              placeholder="changedBy"
+              placeholder="kto zmienia"
               defaultValue="ui-user"
             />
             <div className="status-actions">
               {lead.status === "new" ? (
                 <Button type="submit" name="status" value="qualified">
-                  new to qualified
+                  nowy do zakwalifikowanego
                 </Button>
               ) : null}
               {lead.status === "qualified" ? (
@@ -132,7 +168,7 @@ export default async function LeadDetailPage({
                   value="converted"
                   variant="outline"
                 >
-                  qualified to converted
+                  zakwalifikowany do skonwertowanego
                 </Button>
               ) : null}
               {lead.status === "converted" ? (
@@ -145,15 +181,15 @@ export default async function LeadDetailPage({
 
       <Card>
         <CardHeader>
-          <CardTitle>Opportunities</CardTitle>
+          <CardTitle>Okazje</CardTitle>
         </CardHeader>
         <CardContent>
           <ul className="list">
             {opportunities.map((item) => (
               <li key={item.id} className="list-item">
                 <div className="row-between">
-                  <strong>{item.targetService}</strong>
-                  <Badge>{item.status}</Badge>
+                  <strong>{mapCategory(item.targetService)}</strong>
+                  <Badge>{mapOpportunityStatus(item.status)}</Badge>
                 </div>
                 <p className="muted">{item.reason}</p>
               </li>
