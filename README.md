@@ -1,156 +1,282 @@
-# Turborepo starter
+# Us³ugPOL - Modular Monolith (Zadanie Rekrutacyjne)
 
-This Turborepo starter is maintained by the Turborepo core team.
+## 1. Cel projektu
+Celem projektu jest pokazanie, jak zaprojektowaæ i wdro¿yæ **Core system** dla holdingu us³ugowego Us³ugPOL w architekturze **Modular Monolith** z wyraŸnymi **Bounded Contexts**, zachowuj¹c autonomiê spó³ek-córek i jednoczeœnie wspieraj¹c sprzeda¿ krzy¿ow¹ (cross-sell).
 
-## Using this example
+Projekt realizuje MVP nastawione na:
+- centralne zarz¹dzanie leadami,
+- asynchroniczn¹ komunikacjê zdarzeniow¹,
+- izolacjê domen i danych,
+- gotowoœæ do przysz³ego wydzielenia modu³ów do mikroserwisów.
 
-Run the following command:
+## 2. Kontekst biznesowy
+Us³ugPOL to marka parasolowa obejmuj¹ca trzy obszary:
+- sprz¹tanie (`cleaning`),
+- organizacja imprez (`event`),
+- wynajem aut (`car`).
 
-```sh
-npx create-turbo@latest
+Problem biznesowy:
+- zespo³y i dane s¹ rozdzielone,
+- klient widzi jedn¹ markê,
+- brakuje mechanizmu wykrywania okazji cross-sell miêdzy spó³kami.
+
+Przyk³ad:
+- lead eventowy oddalony od miasta/biura powinien generowaæ sugestiê wynajmu aut.
+
+## 3. Zakres zrealizowanego MVP
+
+## Core (`packages/core`)
+- przyjmowanie leadów z kana³ów: `phone`, `email`, `form`,
+- kategoryzacja leadów: `cleaning`, `event`, `car`,
+- statusy: `new -> qualified -> converted`,
+- rejestrowanie i publikacja zdarzeñ domenowych,
+- wykrywanie okazji cross-sell,
+- audyt dzia³añ.
+
+## Event Service (`packages/event-service`)
+- subskrypcja leadów eventowych,
+- w³asny model danych `event_data`,
+- rozszerzenie danych o pola domenowe (`eventDate`, `location`, `eventType`, `guestCount`, `budget`),
+- zg³aszanie feedbacku do Core (opportunity).
+
+## Car Service (`packages/car-service`)
+- subskrypcja leadów car,
+- w³asny model danych `transport_requests`,
+- obs³uga propozycji cross-sell,
+- decyzje o akceptacji/odrzuceniu okazji.
+
+## Web UI (`apps/web`)
+- dashboard operacyjny dla MVP,
+- intake leadów,
+- podgl¹d leadów i opportunities,
+- edycja danych event/car,
+- zmiana statusu leada.
+
+## 4. Architektura
+
+## Diagram architektury
+
+```mermaid
+flowchart TB
+
+%% =========================
+%% MODULARNY MONOLIT
+%% =========================
+
+subgraph MONOLIT["Modularny Monolit - UslugPOL (Next.js + TypeScript)"]
+
+    subgraph CORE["Kontekst: CORE (Orkiestracja)"]
+        LEAD_MGMT["Zarzadzanie Leadami"]
+        STATUS_FLOW["Obsluga statusow"]
+        CROSS_SELL["Silnik Cross-Sell"]
+        AUDYT["Rejestr zdarzen (Audyt)"]
+        EVENT_BUS["Magistrala Zdarzen (Event Bus)"]
+    end
+
+    subgraph CLEANING["Modul: Uslugi Sprzatania"]
+        CLEANING_LOGIC["Logika domenowa"]
+        CLEANING_META["Wlasne dane rozszerzajace"]
+    end
+
+    subgraph EVENT["Modul: Organizacja Imprez"]
+        EVENT_LOGIC["Logika domenowa"]
+        EVENT_META["Wlasne dane rozszerzajace"]
+    end
+
+    subgraph CAR["Modul: Wynajem Aut"]
+        CAR_LOGIC["Logika domenowa"]
+        CAR_META["Wlasne dane rozszerzajace"]
+    end
+
+end
+
+
+%% =========================
+%% KOMUNIKACJA ZDARZENIOWA
+%% =========================
+
+LEAD_MGMT --> EVENT_BUS
+CROSS_SELL --> EVENT_BUS
+
+EVENT_BUS --> CLEANING_LOGIC
+EVENT_BUS --> EVENT_LOGIC
+EVENT_BUS --> CAR_LOGIC
+
+EVENT_LOGIC --> EVENT_BUS
+CLEANING_LOGIC --> EVENT_BUS
+CAR_LOGIC --> EVENT_BUS
+
+
+%% =========================
+%% BAZA DANYCH
+%% =========================
+
+subgraph DB["PostgreSQL (1 instancja)"]
+
+    subgraph CORE_SCHEMA["Schemat: core"]
+        T1["leady"]
+        T2["lead_metadata"]
+        T3["audit_log"]
+    end
+
+    subgraph CLEANING_SCHEMA["Schemat: cleaning_service"]
+        T4["cleaning_data"]
+    end
+
+    subgraph EVENT_SCHEMA["Schemat: event_service"]
+        T5["event_data"]
+    end
+
+    subgraph CAR_SCHEMA["Schemat: car_service"]
+        T6["transport_requests"]
+    end
+
+end
+
+LEAD_MGMT --> T1
+LEAD_MGMT --> T2
+AUDYT --> T3
+
+CLEANING_LOGIC --> T4
+EVENT_LOGIC --> T5
+CAR_LOGIC --> T6
 ```
 
-## What's inside?
+## Styl architektoniczny
+- **Modular Monolith** w monorepo (Turborepo),
+- wyraŸny podzia³ na konteksty domenowe (`core`, `event-service`, `car-service`),
+- komunikacja przez kontrakty i eventy, nie przez bezpoœrednie zale¿noœci miêdzy us³ugami.
 
-This Turborepo includes the following packages/apps:
+## Komunikacja asynchroniczna
+- u¿yty **in-memory EventBus** jako adapter MVP,
+- Core publikuje zdarzenia (`core.lead.created`, `core.lead.status_changed`, `core.opportunity.detected`),
+- modu³y domenowe subskrybuj¹ tylko potrzebne eventy,
+- architektura przygotowana do podmiany EventBus na zewnêtrzny broker (np. Kafka) bez przebudowy logiki domenowej.
 
-### Apps and Packages
+## Izolacja i granice modu³ów
+- Core nie zna szczegó³ów implementacyjnych us³ug,
+- modu³y biznesowe nie powinny bezpoœrednio czytaæ API/tabel innych modu³ów,
+- dodatkowo zastosowano regu³y lint (`no-restricted-imports`) pilnuj¹ce granic kontekstów.
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+## 5. Model danych i baza
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+## PostgreSQL
+Jedna instancja PostgreSQL, logiczny podzia³ na schematy:
+- `core`
+- `event_service`
+- `car_service`
 
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build
-
-# Without [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build
-yarn dlx turbo build
-pnpm exec turbo build
-```
-
-You can build a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
-
-```
-# With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build --filter=docs
-
-# Without [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build --filter=docs
-yarn exec turbo build --filter=docs
-pnpm exec turbo build --filter=docs
-```
-
-### Develop
-
-To develop all apps and packages, run the following command:
-
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended)
-turbo dev
-
-# Without [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev
-yarn exec turbo dev
-pnpm exec turbo dev
-```
-
-You can develop a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
-
-```
-# With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended)
-turbo dev --filter=web
-
-# Without [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev --filter=web
-yarn exec turbo dev --filter=web
-pnpm exec turbo dev --filter=web
-```
-
-### Remote Caching
-
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended)
-turbo login
-
-# Without [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation), use your package manager
-npx turbo login
-yarn exec turbo login
-pnpm exec turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-```
-# With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended)
-turbo link
-
-# Without [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation), use your package manager
-npx turbo link
-yarn exec turbo link
-pnpm exec turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turborepo.dev/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.dev/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.dev/docs/reference/configuration)
-- [CLI Usage](https://turborepo.dev/docs/reference/command-line-reference)
-
-## Database migrations (Drizzle)
-
-This repo uses bounded-context migrations with separate Drizzle configs:
-
+## ORM i migracje
+- Drizzle ORM,
+- osobne konfiguracje migracji per bounded context:
 - `drizzle.core.config.ts`
 - `drizzle.event-service.config.ts`
 - `drizzle.car-service.config.ts`
 
-Useful commands:
+## 6. Regu³y cross-sell (MVP)
+Zaimplementowane regu³y obejmuj¹:
+- analizê kontekstow¹ opisu/lokalizacji leada eventowego,
+- regu³ê odleg³oœci (`> 50 km`) dla sugestii `car`,
+- geolokalizacjê wzglêdem biura (konfigurowalne ENV),
+- pêtlê feedbacku z modu³u event do Core (zg³oszenie potrzeby transportu).
 
+## 7. Widocznoœæ danych
+- Core: pe³ny wgl¹d w leady i actions/audit.
+- Modu³ domenowy: tylko w³asne dane + rekomendacje cross-sell przekazane przez Core.
+- Brak bezpoœredniej zale¿noœci domena->domena.
+
+## 8. Stack technologiczny
+- Monorepo: **Turborepo**
+- Framework: **Next.js (App Router)**
+- Jêzyk: **TypeScript**
+- DB: **PostgreSQL**
+- ORM: **Drizzle ORM**
+- UI: komponenty stylu **ShadCN-like** (lokalne komponenty UI)
+
+## 9. Struktura repozytorium
+```txt
+apps/
+  web/                      # UI + endpointy App Router
+packages/
+  core/                     # orkiestracja leadów, statusy, cross-sell, audit
+  event-service/            # domena event
+  car-service/              # domena car
+  shared/                   # contracts, event bus, db bootstrap
+  cleaning-service/         # miejsce na dalszy rozwój
+```
+
+## 10. Uruchomienie lokalne
+
+## Wymagania
+- Node.js 18+
+- npm 10+
+- Docker (dla Postgres)
+
+## Kroki
+1. Instalacja zale¿noœci:
 ```sh
-# Generate migration for core
-npm run db:generate
+npm install
+```
 
-# Generate migrations for all bounded contexts
-npm run db:generate:all
+2. Uruchomienie PostgreSQL:
+```sh
+docker compose up -d
+```
 
-# Apply migrations for all contexts
+3. Konfiguracja `.env`:
+```env
+DATABASE_URL=postgres://postgres:postgres@localhost:5432/uslugpol
+USLUGPOL_DISTANCE_THRESHOLD_KM=50
+USLUGPOL_OFFICE_CITY=Krakow
+USLUGPOL_OFFICE_LAT=50.0647
+USLUGPOL_OFFICE_LON=19.9450
+```
+
+4. Migracje:
+```sh
 npm run db:migrate
 ```
+
+5. Start aplikacji:
+```sh
+npm run dev
+```
+
+Aplikacja web: `http://localhost:4000`
+
+## 11. Najwa¿niejsze komendy
+```sh
+npm run dev
+npm run build
+npm run lint
+npm run check-types
+
+npm run db:generate
+npm run db:generate:all
+npm run db:migrate
+```
+
+## 12. Mapa wymagañ -> implementacja
+- Core lead management: ?
+- Kana³y intake + kategoryzacja: ?
+- Status workflow: ?
+- Extensibility przez dane domenowe poza Core: ?
+- Cross-sell engine: ?
+- Feedback loop z modu³u domenowego: ?
+- Asynchroniczna komunikacja event-driven: ? (adapter in-memory)
+- Podzia³ DB na schematy: ?
+- Izolacja bounded contexts: ? (architektura + regu³y lint)
+- Dashboard MVP: ?
+
+## 13. Decyzje projektowe i kompromisy
+- Wybrano in-memory EventBus dla szybkoœci MVP i czytelnoœci architektury.
+- UI jest celowo operacyjne, nie produkcyjne.
+- Priorytetem by³a poprawna architektura i granice modu³ów, nie pe³ne pokrycie edge-case’ów.
+
+## 14. Kierunki dalszego rozwoju
+- Podmiana EventBus na Kafka/RabbitMQ.
+- Outbox pattern dla gwarancji dostarczenia eventów.
+- Silniejsze RBAC i separacja widoków per spó³ka.
+- Testy integracyjne cross-context.
+- Wydzielenie modu³ów do mikroserwisów bez zmiany kontraktów domenowych.
+
