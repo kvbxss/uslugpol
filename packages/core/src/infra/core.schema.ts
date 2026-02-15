@@ -5,8 +5,10 @@ export const core = pgSchema("core");
 export const leads = core.table("leads", {
   id: uuid("id").defaultRandom().primaryKey(),
   category: varchar("category", { length: 50 }).notNull(),
+  channel: varchar("channel", { length: 20 }).notNull(),
   location: varchar("location", { length: 255 }).notNull(),
   description: text("description"),
+  source: jsonb("source").$type<Record<string, unknown> | null>(),
   status: varchar("status", { length: 50 }).notNull().default("new"),
   createdAt: timestamp("created_at", { withTimezone: false }).defaultNow(),
 });
