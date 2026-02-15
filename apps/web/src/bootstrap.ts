@@ -1,5 +1,5 @@
 import { registerCarServiceHandlers } from "@repo/car-service";
-import { configureCoreEventBus, registerCoreHandlers } from "@repo/core";
+import { configureCoreEventBus } from "@repo/core";
 import { registerEventServiceHandlers } from "@repo/event-service";
 import { eventBus } from "@repo/shared";
 
@@ -11,7 +11,6 @@ export function initializeModules() {
   }
 
   configureCoreEventBus(eventBus);
-  registerCoreHandlers();
   registerEventServiceHandlers();
   registerCarServiceHandlers();
   initialized = true;

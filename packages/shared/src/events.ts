@@ -1,4 +1,4 @@
-import type { LeadCategory, LeadStatus } from "./types";
+import type { LeadCategory, LeadChannel, LeadStatus } from "./types";
 
 export const EventNames = {
   LeadCreated: "core.lead.created",
@@ -11,6 +11,7 @@ export type EventName = (typeof EventNames)[keyof typeof EventNames];
 export type LeadCreatedPayload = {
   leadId: string;
   category: LeadCategory;
+  channel: LeadChannel;
   location: string;
   description: string | null;
   status: LeadStatus;

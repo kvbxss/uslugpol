@@ -1,6 +1,13 @@
 {
   "$schema": "https://turborepo.dev/schema.json",
   "ui": "tui",
+  "globalEnv": [
+    "DATABASE_URL",
+    "USLUGPOL_DISTANCE_THRESHOLD_KM",
+    "USLUGPOL_OFFICE_CITY",
+    "USLUGPOL_OFFICE_LAT",
+    "USLUGPOL_OFFICE_LON"
+  ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
