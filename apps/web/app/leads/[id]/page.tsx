@@ -7,17 +7,17 @@ import {
 import { revalidatePath } from "next/cache";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Badge } from "../../../components/ui/badge";
-import { Button } from "../../../components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "../../../components/ui/card";
-import { Input } from "../../../components/ui/input";
-import { initializeModules } from "../../../src/bootstrap";
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { initializeModules } from "@/src/bootstrap";
 
 type Params = {
   id: string;

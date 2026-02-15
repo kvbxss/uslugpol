@@ -1,5 +1,5 @@
 import { getLeadOpportunities } from "@repo/core";
-import { initializeModules } from "../../../../../src/bootstrap";
+import { initializeModules } from "@/src/bootstrap";
 
 initializeModules();
 
@@ -11,4 +11,3 @@ export async function GET(
   const rows = await getLeadOpportunities(id);
   return Response.json(rows);
 }
-

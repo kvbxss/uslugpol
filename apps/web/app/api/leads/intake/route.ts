@@ -1,5 +1,5 @@
 import { intakeLead, type LeadIntakeInput } from "@repo/core";
-import { initializeModules } from "../../../../src/bootstrap";
+import { initializeModules } from "@/src/bootstrap";
 
 initializeModules();
 
