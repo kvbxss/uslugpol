@@ -1,6 +1,6 @@
 # UsługPOL – Modular Monolith (Core + Cross-Sell Engine)
 
-![alt text](uslugpol.png  "UI systemu")
+![alt text](uslugpol-ui.png  "UI systemu")
 
 ## 1. Cel projektu
 
