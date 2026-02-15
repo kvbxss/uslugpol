@@ -277,7 +277,8 @@ h4,
 }
 
 .bw-layout {
-  max-width: 1440px;
+  width: 90vw;
+  max-width: 1800px;
   margin: 0 auto;
   min-height: 100svh;
   padding: 28px 16px;
