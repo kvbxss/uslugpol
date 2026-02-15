@@ -133,3 +133,24 @@ Learn more about the power of Turborepo:
 - [Filtering](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters)
 - [Configuration Options](https://turborepo.dev/docs/reference/configuration)
 - [CLI Usage](https://turborepo.dev/docs/reference/command-line-reference)
+
+## Database migrations (Drizzle)
+
+This repo uses bounded-context migrations with separate Drizzle configs:
+
+- `drizzle.core.config.ts`
+- `drizzle.event-service.config.ts`
+- `drizzle.car-service.config.ts`
+
+Useful commands:
+
+```sh
+# Generate migration for core
+npm run db:generate
+
+# Generate migrations for all bounded contexts
+npm run db:generate:all
+
+# Apply migrations for all contexts
+npm run db:migrate
+```
