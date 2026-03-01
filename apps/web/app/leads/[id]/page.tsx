@@ -7,6 +7,11 @@ import {
 import { revalidatePath } from "next/cache";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import {
+  can,
+  requireActionPermission,
+  requirePagePermission,
+} from "@/lib/auth/clerk-auth";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,7 +21,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { initializeModules } from "@/src/bootstrap";
 
 type Params = {
@@ -57,7 +61,12 @@ async function updateStatusAction(formData: FormData) {
 
   const leadId = String(formData.get("leadId") ?? "");
   const status = String(formData.get("status") ?? "");
-  const changedBy = String(formData.get("changedBy") ?? "ui-user");
+  const nextPath = leadId ? `/leads/${leadId}` : "/";
+  const authContext = await requireActionPermission(
+    "lead.status.update",
+    nextPath,
+  );
+  const changedBy = authContext.userId;
 
   if (status === "qualified") {
     await qualifyLead(leadId, { changedBy });
@@ -79,6 +88,8 @@ export default async function LeadDetailPage({
   initializeModules();
 
   const { id } = await params;
+  const authContext = await requirePagePermission("lead.view", `/leads/${id}`);
+  const canUpdateStatus = can(authContext, "lead.status.update");
   const lead = await getLeadById(id);
   if (!lead) {
     notFound();
@@ -150,18 +161,13 @@ export default async function LeadDetailPage({
         <CardContent>
           <form action={updateStatusAction} className="status-form">
             <input type="hidden" name="leadId" value={lead.id} />
-            <Input
-              name="changedBy"
-              placeholder="kto zmienia"
-              defaultValue="ui-user"
-            />
             <div className="status-actions">
-              {lead.status === "new" ? (
+              {lead.status === "new" && canUpdateStatus ? (
                 <Button type="submit" name="status" value="qualified">
                   nowy do zakwalifikowanego
                 </Button>
               ) : null}
-              {lead.status === "qualified" ? (
+              {lead.status === "qualified" && canUpdateStatus ? (
                 <Button
                   type="submit"
                   name="status"
@@ -173,6 +179,9 @@ export default async function LeadDetailPage({
               ) : null}
               {lead.status === "converted" ? (
                 <p className="muted">Lead jest juz skonwertowany. Brak kolejnych przejsc.</p>
+              ) : null}
+              {!canUpdateStatus ? (
+                <p className="muted">Ta rola nie moze zmieniac statusu leadow.</p>
               ) : null}
             </div>
           </form>

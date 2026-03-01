@@ -50,11 +50,17 @@ type OpportunityRow = {
 
 export function CoreModule({
   basePath,
+  roleLabel,
+  canCreateLead,
+  canViewLeadDetails,
   stats,
   leads,
   opportunities,
 }: {
   basePath: string;
+  roleLabel: string;
+  canCreateLead: boolean;
+  canViewLeadDetails: boolean;
   stats: {
     newCount: number;
     qualifiedCount: number;
@@ -68,7 +74,7 @@ export function CoreModule({
     <Card id="core-panel" className="bw-core-card">
       <CardHeader className="bw-core-header">
         <CardTitle>Panel Core</CardTitle>
-        <div className="bw-user-pill">Administrator</div>
+        <div className="bw-user-pill">{roleLabel}</div>
       </CardHeader>
       <CardContent className="bw-core-content">
         <div className="bw-stats">
@@ -92,9 +98,15 @@ export function CoreModule({
 
         <div className="bw-section-header">
           <h3>Leady</h3>
-          <Link href={`${basePath}?addLead=1`}>
-            <Button size="sm">+ Dodaj lead</Button>
-          </Link>
+          {canCreateLead ? (
+            <Link href={`${basePath}?addLead=1`}>
+              <Button size="sm">+ Dodaj lead</Button>
+            </Link>
+          ) : (
+            <Button size="sm" disabled>
+              + Dodaj lead
+            </Button>
+          )}
         </div>
         <div className="bw-table-wrap">
           <table className="bw-table">
@@ -121,9 +133,13 @@ export function CoreModule({
                   </td>
                   <td>{lead.createdAtLabel}</td>
                   <td>
-                    <Link className="link" href={`/leads/${lead.id}`}>
-                      szczegoly
-                    </Link>
+                    {canViewLeadDetails ? (
+                      <Link className="link" href={`/leads/${lead.id}`}>
+                        szczegoly
+                      </Link>
+                    ) : (
+                      <span className="muted">brak dostepu</span>
+                    )}
                   </td>
                 </tr>
               ))}

@@ -139,6 +139,15 @@ h4,
   animation: riseIn 300ms ease-out;
 }
 
+.auth-shell {
+  min-height: 100svh;
+  width: 100%;
+  display: grid;
+  place-items: center;
+  padding: 24px 16px;
+  animation: riseIn 300ms ease-out;
+}
+
 .lead-shell {
   max-width: 960px;
 }

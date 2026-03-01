@@ -1,5 +1,6 @@
 import { convertLead, qualifyLead } from "@repo/core";
 import { initializeModules } from "@/src/bootstrap";
+import { requireApiPermission } from "@/lib/auth/clerk-auth";
 
 initializeModules();
 
@@ -12,11 +13,15 @@ export async function PATCH(
   req: Request,
   context: { params: Promise<{ id: string }> },
 ) {
+  const permission = await requireApiPermission("lead.status.update");
+  if (!permission.ok) {
+    return permission.response;
+  }
+
   try {
     const { id } = await context.params;
     const body = (await req.json()) as StatusUpdateInput;
-    const changedBy =
-      body.changedBy ?? req.headers.get("x-user-id") ?? "system";
+    const changedBy = body.changedBy ?? permission.context.userId;
     const actor = { changedBy };
 
     if (body.status === "qualified") {

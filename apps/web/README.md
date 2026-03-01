@@ -1,36 +1,53 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/create-next-app).
+# Web App (`apps/web`)
 
-## Getting Started
+Next.js App Router frontend for the UslugPOL panel.
 
-First, run the development server:
+## Development
+
+From the monorepo root:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm run dev --workspace web
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+App URL: `http://localhost:4000`
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Clerk Authentication Setup
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load Inter, a custom Google Font.
+This app now uses Clerk for login/session handling and RBAC checks.
 
-## Learn More
+1. Add environment variables (for local development):
 
-To learn more about Next.js, take a look at the following resources:
+```env
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
+CLERK_SECRET_KEY=sk_test_...
+NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+2. In Clerk Dashboard, configure Session token claims so app role data is present in JWT claims.  
+Recommended custom claim:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```json
+{
+  "metadata": "{{user.public_metadata}}"
+}
+```
 
-## Deploy on Vercel
+3. Set each user's `public_metadata.role` to one of:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- `admin`
+- `core_operator`
+- `event_operator`
+- `car_operator`
+- `viewer`
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+If no valid role is present, the app falls back to `viewer`.
+
+## Auth Routes
+
+- `/sign-in`
+- `/sign-up`
+- `/forbidden`
+
+Protected routes are enforced by Clerk proxy middleware + server-side permission checks.

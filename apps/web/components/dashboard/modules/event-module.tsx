@@ -12,10 +12,16 @@ type EventLeadRow = {
 
 export function EventModule({
   basePath,
+  roleLabel,
+  canEditEventLead,
+  canReportOpportunity,
   eventLeads,
   reportOpportunityAction,
 }: {
   basePath: string;
+  roleLabel: string;
+  canEditEventLead: boolean;
+  canReportOpportunity: boolean;
   eventLeads: EventLeadRow[];
   reportOpportunityAction: (formData: FormData) => Promise<void>;
 }) {
@@ -25,7 +31,7 @@ export function EventModule({
     <Card id="event-panel" className="bw-panel-card">
       <CardHeader className="bw-panel-header">
         <CardTitle>Modul Event</CardTitle>
-        <div className="bw-user-pill">Administrator</div>
+        <div className="bw-user-pill">{roleLabel}</div>
       </CardHeader>
       <CardContent className="bw-panel-content">
         <h3 className="bw-subtitle">Leady eventowe</h3>
@@ -46,11 +52,17 @@ export function EventModule({
                     <Badge>sukces</Badge>
                   </td>
                   <td>
-                    <Link href={`${basePath}?editEvent=${lead.id}`}>
-                      <Button size="sm" variant="outline" type="button">
+                    {canEditEventLead ? (
+                      <Link href={`${basePath}?editEvent=${lead.id}`}>
+                        <Button size="sm" variant="outline" type="button">
+                          Edytuj
+                        </Button>
+                      </Link>
+                    ) : (
+                      <Button size="sm" variant="outline" type="button" disabled>
                         Edytuj
                       </Button>
-                    </Link>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -64,7 +76,12 @@ export function EventModule({
           <label className="field">
             <span>Lead eventowy</span>
             {eventLeads.length ? (
-              <Select name="leadId" defaultValue={firstEventLeadId} required>
+              <Select
+                name="leadId"
+                defaultValue={firstEventLeadId}
+                required
+                disabled={!canReportOpportunity}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Wybierz lead" />
                 </SelectTrigger>
@@ -82,11 +99,23 @@ export function EventModule({
           </label>
           <label className="field">
             <span>Liczba osob do transportu</span>
-            <Input name="passengers" placeholder="np. 20" defaultValue="20" />
+            <Input
+              name="passengers"
+              placeholder="np. 20"
+              defaultValue="20"
+              disabled={!canReportOpportunity}
+            />
           </label>
-          <Button size="sm" type="submit" disabled={!eventLeads.length}>
+          <Button
+            size="sm"
+            type="submit"
+            disabled={!eventLeads.length || !canReportOpportunity}
+          >
             Zglos do modulu Core
           </Button>
+          {!canReportOpportunity ? (
+            <p className="muted">Ta rola nie moze zglaszac okazji cross-sell.</p>
+          ) : null}
         </form>
       </CardContent>
     </Card>
