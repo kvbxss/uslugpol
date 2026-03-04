@@ -1,5 +1,6 @@
 import { SignUp } from "@clerk/nextjs";
 import { auth } from "@clerk/nextjs/server";
+import { clerkAuthAppearance } from "@/lib/auth/clerk-appearance";
 import { redirect } from "next/navigation";
 
 export default async function SignUpPage() {
@@ -10,7 +11,9 @@ export default async function SignUpPage() {
 
   return (
     <main className="auth-shell">
-      <SignUp />
+      <div className="auth-frame">
+        <SignUp appearance={clerkAuthAppearance} />
+      </div>
     </main>
   );
 }

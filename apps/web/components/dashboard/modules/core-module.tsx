@@ -10,11 +10,25 @@ function mapLeadStatus(status: string) {
   return status;
 }
 
+function mapLeadStatusVariant(status: string) {
+  if (status === "new") return "info" as const;
+  if (status === "qualified") return "warning" as const;
+  if (status === "converted") return "success" as const;
+  return "neutral" as const;
+}
+
 function mapOpportunityStatus(status: string) {
   if (status === "open") return "otwarta";
   if (status === "accepted") return "zaakceptowana";
   if (status === "rejected") return "odrzucona";
   return status;
+}
+
+function mapOpportunityStatusVariant(status: string) {
+  if (status === "open") return "warning" as const;
+  if (status === "accepted") return "success" as const;
+  if (status === "rejected") return "danger" as const;
+  return "neutral" as const;
 }
 
 function mapCategory(category: string) {
@@ -71,7 +85,7 @@ export function CoreModule({
   opportunities: OpportunityRow[];
 }) {
   return (
-    <Card id="core-panel" className="bw-core-card">
+    <Card id="core-panel" className="bw-core-card bw-panel-core">
       <CardHeader className="bw-core-header">
         <CardTitle>Panel Core</CardTitle>
         <div className="bw-user-pill">{roleLabel}</div>
@@ -129,7 +143,9 @@ export function CoreModule({
                   <td>{mapChannel(lead.channel)}</td>
                   <td>{lead.location}</td>
                   <td>
-                    <Badge>{mapLeadStatus(lead.status)}</Badge>
+                    <Badge variant={mapLeadStatusVariant(lead.status)}>
+                      {mapLeadStatus(lead.status)}
+                    </Badge>
                   </td>
                   <td>{lead.createdAtLabel}</td>
                   <td>
@@ -143,6 +159,11 @@ export function CoreModule({
                   </td>
                 </tr>
               ))}
+              {!leads.length ? (
+                <tr className="bw-table-empty">
+                  <td colSpan={7}>Brak leadow do wyswietlenia.</td>
+                </tr>
+              ) : null}
             </tbody>
           </table>
         </div>
@@ -165,10 +186,17 @@ export function CoreModule({
                   <td>{mapCategory(item.targetService)}</td>
                   <td>{item.reason}</td>
                   <td>
-                    <Badge>{mapOpportunityStatus(item.status)}</Badge>
+                    <Badge variant={mapOpportunityStatusVariant(item.status)}>
+                      {mapOpportunityStatus(item.status)}
+                    </Badge>
                   </td>
                 </tr>
               ))}
+              {!opportunities.length ? (
+                <tr className="bw-table-empty">
+                  <td colSpan={4}>Brak okazji cross-sell.</td>
+                </tr>
+              ) : null}
             </tbody>
           </table>
         </div>

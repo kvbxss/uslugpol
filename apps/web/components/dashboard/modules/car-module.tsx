@@ -10,6 +10,13 @@ function mapOpportunityStatus(status: string) {
   return status;
 }
 
+function mapOpportunityStatusVariant(status: string) {
+  if (status === "open") return "warning" as const;
+  if (status === "accepted") return "success" as const;
+  if (status === "rejected") return "danger" as const;
+  return "neutral" as const;
+}
+
 type CarLeadRow = {
   id: string;
   leadId: string;
@@ -42,7 +49,7 @@ export function CarModule({
   decideOpportunityAction: (formData: FormData) => Promise<void>;
 }) {
   return (
-    <Card id="car-panel" className="bw-panel-card">
+    <Card id="car-panel" className="bw-panel-card bw-panel-car">
       <CardHeader className="bw-panel-header">
         <CardTitle>Modul Transport</CardTitle>
         <div className="bw-user-pill">{roleLabel}</div>
@@ -81,7 +88,7 @@ export function CarModule({
                 </tr>
               ))}
               {!carLeads.length ? (
-                <tr>
+                <tr className="bw-table-empty">
                   <td colSpan={4}>Brak leadow car.</td>
                 </tr>
               ) : null}
@@ -117,13 +124,20 @@ export function CarModule({
                         </Button>
                       </form>
                     ) : item.status === "open" ? (
-                      <Badge>brak uprawnien</Badge>
+                      <Badge variant="neutral">brak uprawnien</Badge>
                     ) : (
-                      <Badge>{mapOpportunityStatus(item.status)}</Badge>
+                      <Badge variant={mapOpportunityStatusVariant(item.status)}>
+                        {mapOpportunityStatus(item.status)}
+                      </Badge>
                     )}
                   </td>
                 </tr>
               ))}
+              {!carOpportunities.length ? (
+                <tr className="bw-table-empty">
+                  <td colSpan={3}>Brak okazji dla transportu.</td>
+                </tr>
+              ) : null}
             </tbody>
           </table>
         </div>

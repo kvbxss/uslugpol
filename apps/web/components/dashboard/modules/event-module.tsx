@@ -28,7 +28,7 @@ export function EventModule({
   const firstEventLeadId = eventLeads[0]?.leadId ?? "";
 
   return (
-    <Card id="event-panel" className="bw-panel-card">
+    <Card id="event-panel" className="bw-panel-card bw-panel-event">
       <CardHeader className="bw-panel-header">
         <CardTitle>Modul Event</CardTitle>
         <div className="bw-user-pill">{roleLabel}</div>
@@ -49,7 +49,7 @@ export function EventModule({
                 <tr key={lead.id}>
                   <td>{lead.leadId.slice(0, 6)}</td>
                   <td>
-                    <Badge>sukces</Badge>
+                    <Badge variant="success">sukces</Badge>
                   </td>
                   <td>
                     {canEditEventLead ? (
@@ -66,6 +66,11 @@ export function EventModule({
                   </td>
                 </tr>
               ))}
+              {!eventLeads.length ? (
+                <tr className="bw-table-empty">
+                  <td colSpan={3}>Brak leadow eventowych.</td>
+                </tr>
+              ) : null}
             </tbody>
           </table>
         </div>

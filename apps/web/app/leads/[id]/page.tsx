@@ -34,11 +34,25 @@ function mapLeadStatus(status: string) {
   return status;
 }
 
+function mapLeadStatusVariant(status: string) {
+  if (status === "new") return "info" as const;
+  if (status === "qualified") return "warning" as const;
+  if (status === "converted") return "success" as const;
+  return "neutral" as const;
+}
+
 function mapOpportunityStatus(status: string) {
   if (status === "open") return "otwarta";
   if (status === "accepted") return "zaakceptowana";
   if (status === "rejected") return "odrzucona";
   return status;
+}
+
+function mapOpportunityStatusVariant(status: string) {
+  if (status === "open") return "warning" as const;
+  if (status === "accepted") return "success" as const;
+  if (status === "rejected") return "danger" as const;
+  return "neutral" as const;
 }
 
 function mapCategory(category: string) {
@@ -131,7 +145,9 @@ export default async function LeadDetailPage({
             <div className="detail-item">
               <dt>Status</dt>
               <dd>
-                <Badge>{mapLeadStatus(lead.status)}</Badge>
+                <Badge variant={mapLeadStatusVariant(lead.status)}>
+                  {mapLeadStatus(lead.status)}
+                </Badge>
               </dd>
             </div>
             <div className="detail-item">
@@ -198,7 +214,9 @@ export default async function LeadDetailPage({
               <li key={item.id} className="list-item">
                 <div className="row-between">
                   <strong>{mapCategory(item.targetService)}</strong>
-                  <Badge>{mapOpportunityStatus(item.status)}</Badge>
+                  <Badge variant={mapOpportunityStatusVariant(item.status)}>
+                    {mapOpportunityStatus(item.status)}
+                  </Badge>
                 </div>
                 <p className="muted">{item.reason}</p>
               </li>

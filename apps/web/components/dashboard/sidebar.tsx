@@ -15,8 +15,10 @@ export function DashboardSidebar({
           <span className="bw-logo-dot" />
           <span>UslugPOL</span>
         </div>
+        <p className="bw-brand-subtitle">Control Tower</p>
 
         <div className="bw-nav-group">
+          <p className="bw-nav-label">Konteksty domenowe</p>
           <nav className="bw-nav">
             <a className="bw-nav-item bw-nav-item-active">
               <span className="bw-nav-dot" />
@@ -41,6 +43,7 @@ export function DashboardSidebar({
       <div className="bw-help-card">
         <p className="bw-help-title">{displayName}</p>
         <p className="bw-help-text">Rola: {roleLabel}</p>
+        <p className="bw-help-meta">Status: online</p>
         <SignOutButton>
           <Button type="button" size="sm" className="mt-3 w-full">
             Wyloguj
