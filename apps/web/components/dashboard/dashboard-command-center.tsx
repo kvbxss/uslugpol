@@ -292,21 +292,24 @@ export function DashboardCommandCenter({
       label: "Otwarte okazje",
       value: openOpportunities.length,
       hint: "Wymagaja decyzji zespolu",
-      href: "#car-panel",
+      href: "car",
+      panelId: "car-panel",
     },
     {
       id: "stale-leads",
       label: "Leady bez progresu",
       value: staleLeads.length,
       hint: `Nowe leady starsze niz ${windowDays} dni`,
-      href: "#core-panel",
+      href: "core",
+      panelId: "core-panel",
     },
     {
       id: "event-quality",
       label: "Jakosc danych event",
       value: eventCompleteness,
       hint: "Odsetek kompletnych rekordow",
-      href: "#event-panel",
+      href: "event",
+      panelId: "event-panel",
       suffix: "%",
     },
   ];
@@ -320,9 +323,25 @@ export function DashboardCommandCenter({
     window: windowParam,
     addLead: "1",
   });
+  const getModuleHref = (
+    focus: Exclude<ModuleFocus, "all">,
+    panelId: string,
+  ) =>
+    `${buildHref(basePath, {
+      q: searchParam,
+      focus,
+      window: windowParam,
+    })}#${panelId}`;
+  const fullLeadListHref = getModuleHref("core", "core-panel");
+  const dataAuditHref = getModuleHref("event", "event-panel");
+  const recommendationsHref = getModuleHref("core", "core-panel");
 
   return (
-    <section className="bw-command-center" aria-label="Rozszerzony dashboard">
+    <section
+      id="bw-command-center"
+      className="bw-command-center"
+      aria-label="Rozszerzony dashboard"
+    >
       <Card className="bw-cc-toolbar-card">
         <CardContent className="bw-cc-toolbar-content">
           <div className="bw-cc-greeting">
@@ -427,7 +446,13 @@ export function DashboardCommandCenter({
               <ul className="bw-cc-actions-list">
                 {actionItems.map((item) => (
                   <li key={item.id}>
-                    <Link href={item.href} className="bw-cc-action-link">
+                    <Link
+                      href={getModuleHref(
+                        item.href as Exclude<ModuleFocus, "all">,
+                        item.panelId,
+                      )}
+                      className="bw-cc-action-link"
+                    >
                       <div>
                         <p>{item.label}</p>
                         <span>{item.hint}</span>
@@ -547,7 +572,7 @@ export function DashboardCommandCenter({
               <Users size={16} aria-hidden />
               Ostatnie leady
             </CardTitle>
-            <Link href="#core-panel" className="bw-cc-inline-link">
+            <Link href={fullLeadListHref} className="bw-cc-inline-link">
               Pelna lista
             </Link>
           </CardHeader>
@@ -577,7 +602,7 @@ export function DashboardCommandCenter({
               <Sparkles size={16} aria-hidden />
               Health Snapshot
             </CardTitle>
-            <Link href="#event-panel" className="bw-cc-inline-link">
+            <Link href={dataAuditHref} className="bw-cc-inline-link">
               Audyt danych
             </Link>
           </CardHeader>
@@ -603,7 +628,7 @@ export function DashboardCommandCenter({
               </div>
               <strong>{conversionRate}%</strong>
             </div>
-            <Link href="#core-panel" className="bw-cc-reco-link">
+            <Link href={recommendationsHref} className="bw-cc-reco-link">
               Zobacz rekomendacje operacyjne <ArrowUpRight size={15} aria-hidden />
             </Link>
           </CardContent>

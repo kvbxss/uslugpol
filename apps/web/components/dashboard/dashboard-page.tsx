@@ -269,6 +269,15 @@ export async function DashboardPage({
   const showCleaning =
     canViewCleaning && (activeFocus === "all" || activeFocus === "cleaning");
   const showRightColumn = showEvent || showCar || showCleaning;
+  const convertedLeadCount = filteredLeads.filter(
+    (lead) => lead.status === "converted",
+  ).length;
+  const sidebarConversionRate = filteredLeads.length
+    ? Math.round((convertedLeadCount / filteredLeads.length) * 100)
+    : 0;
+  const sidebarOpenOpportunities = filteredOpportunities.filter(
+    (item) => item.status === "open",
+  ).length;
   const shouldOpenOperationalPanels =
     activeFocus !== "all" || shouldShowAddLeadModal || Boolean(selectedEventLead) || Boolean(selectedCarLead);
 
@@ -278,6 +287,11 @@ export async function DashboardPage({
         basePath={basePath}
         navigationQuery={navigationQuery}
         activeFocus={activeFocus}
+        summary={{
+          leadCount: filteredLeads.length,
+          openOpportunityCount: sidebarOpenOpportunities,
+          conversionRate: sidebarConversionRate,
+        }}
         roleLabel={authContext.roleLabel}
         displayName={authContext.displayName}
       />
