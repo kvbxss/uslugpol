@@ -160,25 +160,25 @@ function buildHref(
 
 function toModuleLabel(value: string) {
   if (value === "event") {
-    return "Event";
+    return "event";
   }
   if (value === "car") {
-    return "Transport";
+    return "transport";
   }
   if (value === "cleaning") {
-    return "Sprzatanie";
+    return "sprzatanie";
   }
-  return "Core";
+  return "core";
 }
 
 function toChannelLabel(value: string) {
   if (value === "email") {
-    return "E-mail";
+    return "e-mail";
   }
   if (value === "phone") {
-    return "Telefon";
+    return "telefon";
   }
-  return "Form";
+  return "formularz";
 }
 
 export function DashboardCommandCenter({
@@ -345,7 +345,7 @@ export function DashboardCommandCenter({
       <Card className="bw-cc-toolbar-card">
         <CardContent className="bw-cc-toolbar-content">
           <div className="bw-cc-greeting">
-            <p className="bw-cc-kicker">Control Tower</p>
+            <p className="bw-cc-kicker">Centrum dowodzenia</p>
             <h2>Czesc, {getFirstName(displayName)}!</h2>
             <p>{todayLabel}</p>
           </div>
@@ -366,10 +366,10 @@ export function DashboardCommandCenter({
               <Filter size={15} aria-hidden />
               <select name="focus" defaultValue={moduleFocus} className="bw-cc-select">
                 <option value="all">Wszystkie moduly</option>
-                <option value="core">Core</option>
-                <option value="event">Event</option>
-                <option value="car">Transport</option>
-                <option value="cleaning">Sprzatanie</option>
+                <option value="core">core</option>
+                <option value="event">event</option>
+                <option value="car">transport</option>
+                <option value="cleaning">sprzatanie</option>
               </select>
             </label>
 
@@ -391,7 +391,7 @@ export function DashboardCommandCenter({
             </Button>
             <Link href={basePath}>
               <Button size="sm" variant="outline" type="button">
-                Reset
+                Resetuj
               </Button>
             </Link>
 
@@ -412,7 +412,7 @@ export function DashboardCommandCenter({
             <CardHeader>
               <CardTitle className="bw-cc-card-title">
                 <TrendingUp size={16} aria-hidden />
-                Portfolio Pulse
+                Puls portfela
               </CardTitle>
             </CardHeader>
             <CardContent className="bw-cc-info-content">
@@ -439,7 +439,7 @@ export function DashboardCommandCenter({
             <CardHeader>
               <CardTitle className="bw-cc-card-title">
                 <Target size={16} aria-hidden />
-                Action Queue
+                Kolejka zadan
               </CardTitle>
             </CardHeader>
             <CardContent className="bw-cc-actions-content">
@@ -470,9 +470,9 @@ export function DashboardCommandCenter({
 
           <Card className="bw-cc-upgrade-card">
             <CardContent className="bw-cc-upgrade-content">
-              <p className="bw-cc-upgrade-title">Upgrade stream</p>
+              <p className="bw-cc-upgrade-title">Strumien usprawnien</p>
               <p>
-                Dashboard dziala juz jako command center: analityka + kolejka zadan
+                Dashboard dziala juz jako centrum dowodzenia: analityka + kolejka zadan
                 + filtry runtime.
               </p>
               <Badge variant="info" className="bw-cc-upgrade-badge">
@@ -514,7 +514,7 @@ export function DashboardCommandCenter({
               </span>
               <span>
                 <i className="bw-cc-dot bw-cc-dot-cross" />
-                Cross-sell
+                Okazje
               </span>
             </div>
 
@@ -600,7 +600,7 @@ export function DashboardCommandCenter({
           <CardHeader className="bw-cc-list-header">
             <CardTitle className="bw-cc-card-title">
               <Sparkles size={16} aria-hidden />
-              Health Snapshot
+              Kondycja danych
             </CardTitle>
             <Link href={dataAuditHref} className="bw-cc-inline-link">
               Audyt danych
@@ -608,21 +608,21 @@ export function DashboardCommandCenter({
           </CardHeader>
           <CardContent className="bw-cc-health-content">
             <div className="bw-cc-health-item">
-              <p>Event completeness</p>
+              <p>Kompletnosc event</p>
               <div className="bw-cc-meter">
                 <span style={{ width: `${eventCompleteness}%` }} />
               </div>
               <strong>{eventCompleteness}%</strong>
             </div>
             <div className="bw-cc-health-item">
-              <p>Transport completeness</p>
+              <p>Kompletnosc transport</p>
               <div className="bw-cc-meter">
                 <span style={{ width: `${carCompleteness}%` }} />
               </div>
               <strong>{carCompleteness}%</strong>
             </div>
             <div className="bw-cc-health-item">
-              <p>Core conversion</p>
+              <p>Konwersja core</p>
               <div className="bw-cc-meter">
                 <span style={{ width: `${conversionRate}%` }} />
               </div>

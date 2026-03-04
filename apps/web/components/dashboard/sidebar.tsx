@@ -37,7 +37,7 @@ export function DashboardSidebar({
   const navItems = [
     {
       id: "all",
-      label: "Command Center",
+      label: "Centrum dowodzenia",
       panelId: "bw-command-center",
       icon: LayoutDashboard,
     },
@@ -76,7 +76,7 @@ export function DashboardSidebar({
             <span>UslugPOL</span>
           </div>
         </Link>
-        <p className="bw-brand-subtitle">Control Tower</p>
+        <p className="bw-brand-subtitle">Centrum dowodzenia</p>
 
         <div className="bw-nav-group">
           <p className="bw-nav-label">Konteksty domenowe</p>
@@ -123,7 +123,7 @@ export function DashboardSidebar({
           <div className="bw-sidebar-metric">
             <p>
               <Sparkle size={13} aria-hidden />
-              Conversion
+              Konwersja
             </p>
             <strong>{summary.conversionRate}%</strong>
           </div>

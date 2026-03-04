@@ -341,7 +341,7 @@ export async function DashboardPage({
         <details className="bw-ops-shell" open={shouldOpenOperationalPanels}>
           <summary className="bw-ops-summary">
             <span>Panele operacyjne</span>
-            <small>Core, Event, Transport, Sprzatanie</small>
+            <small>modul core, event, transport, sprzatanie</small>
           </summary>
           <div className="bw-ops-grid">
             {showCore ? (
