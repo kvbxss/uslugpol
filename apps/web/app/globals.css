@@ -807,6 +807,7 @@ h4,
 
 .bw-content {
   position: relative;
+  isolation: isolate;
   display: grid;
   gap: 20px;
   grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
@@ -827,7 +828,7 @@ h4,
   position: absolute;
   inset: 0;
   pointer-events: none;
-  z-index: 0;
+  z-index: -1;
   background:
     radial-gradient(80% 110% at 100% 0%, rgba(77, 143, 235, 0.14), rgba(77, 143, 235, 0) 52%),
     radial-gradient(80% 90% at 0% 100%, rgba(239, 142, 96, 0.12), rgba(239, 142, 96, 0) 56%);
@@ -838,7 +839,7 @@ h4,
   position: absolute;
   inset: 0;
   pointer-events: none;
-  z-index: 0;
+  z-index: -1;
   background:
     linear-gradient(120deg, rgba(111, 149, 202, 0.08), rgba(111, 149, 202, 0) 30%),
     repeating-linear-gradient(
@@ -852,7 +853,6 @@ h4,
 
 .bw-content > * {
   position: relative;
-  z-index: 1;
 }
 
 .bw-hero {
@@ -1298,6 +1298,19 @@ h4,
   display: flex;
   justify-content: flex-end;
   gap: 8px;
+}
+
+/* Keep third-party fixed popups (for example Clerk dev widgets) above dashboard layers. */
+iframe[src*="clerk" i],
+iframe[title*="clerk" i],
+[id*="clerk" i][style*="position: fixed"],
+[class*="clerk" i][style*="position: fixed"] {
+  z-index: 1200 !important;
+}
+
+/* Fallback for third-party onboarding widgets rendered as fixed bottom-right popups. */
+[style*="position: fixed"][style*="bottom"][style*="right"] {
+  z-index: 1200 !important;
 }
 
 @media (max-width: 1220px) {
