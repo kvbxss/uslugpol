@@ -4,6 +4,7 @@ import { Button } from "../../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../../ui/card";
 import { Input } from "../../ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../ui/select";
+import { buildDashboardHref } from "../dashboard-url";
 
 type EventLeadRow = {
   id: string;
@@ -12,20 +13,30 @@ type EventLeadRow = {
 
 export function EventModule({
   basePath,
+  navigationQuery,
+  returnPath,
+  roleLabel,
+  canEditEventLead,
+  canReportOpportunity,
   eventLeads,
   reportOpportunityAction,
 }: {
   basePath: string;
+  navigationQuery?: string;
+  returnPath: string;
+  roleLabel: string;
+  canEditEventLead: boolean;
+  canReportOpportunity: boolean;
   eventLeads: EventLeadRow[];
   reportOpportunityAction: (formData: FormData) => Promise<void>;
 }) {
   const firstEventLeadId = eventLeads[0]?.leadId ?? "";
 
   return (
-    <Card id="event-panel" className="bw-panel-card">
+    <Card id="event-panel" className="bw-panel-card bw-panel-event">
       <CardHeader className="bw-panel-header">
         <CardTitle>Modul Event</CardTitle>
-        <div className="bw-user-pill">Administrator</div>
+        <div className="bw-user-pill">{roleLabel}</div>
       </CardHeader>
       <CardContent className="bw-panel-content">
         <h3 className="bw-subtitle">Leady eventowe</h3>
@@ -43,28 +54,48 @@ export function EventModule({
                 <tr key={lead.id}>
                   <td>{lead.leadId.slice(0, 6)}</td>
                   <td>
-                    <Badge>sukces</Badge>
+                    <Badge variant="success">sukces</Badge>
                   </td>
                   <td>
-                    <Link href={`${basePath}?editEvent=${lead.id}`}>
-                      <Button size="sm" variant="outline" type="button">
+                    {canEditEventLead ? (
+                      <Link
+                        href={buildDashboardHref(basePath, navigationQuery, {
+                          editEvent: lead.id,
+                        })}
+                      >
+                        <Button size="sm" variant="outline" type="button">
+                          Edytuj
+                        </Button>
+                      </Link>
+                    ) : (
+                      <Button size="sm" variant="outline" type="button" disabled>
                         Edytuj
                       </Button>
-                    </Link>
+                    )}
                   </td>
                 </tr>
               ))}
+              {!eventLeads.length ? (
+                <tr className="bw-table-empty">
+                  <td colSpan={3}>Brak leadow eventowych.</td>
+                </tr>
+              ) : null}
             </tbody>
           </table>
         </div>
 
         <h3 className="bw-subtitle">Informacja cross-sell do modulu Core</h3>
         <form action={reportOpportunityAction} className="bw-feedback-form">
-          <input type="hidden" name="returnPath" value={basePath} />
+          <input type="hidden" name="returnPath" value={returnPath} />
           <label className="field">
             <span>Lead eventowy</span>
             {eventLeads.length ? (
-              <Select name="leadId" defaultValue={firstEventLeadId} required>
+              <Select
+                name="leadId"
+                defaultValue={firstEventLeadId}
+                required
+                disabled={!canReportOpportunity}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Wybierz lead" />
                 </SelectTrigger>
@@ -82,11 +113,23 @@ export function EventModule({
           </label>
           <label className="field">
             <span>Liczba osob do transportu</span>
-            <Input name="passengers" placeholder="np. 20" defaultValue="20" />
+            <Input
+              name="passengers"
+              placeholder="np. 20"
+              defaultValue="20"
+              disabled={!canReportOpportunity}
+            />
           </label>
-          <Button size="sm" type="submit" disabled={!eventLeads.length}>
+          <Button
+            size="sm"
+            type="submit"
+            disabled={!eventLeads.length || !canReportOpportunity}
+          >
             Zglos do modulu Core
           </Button>
+          {!canReportOpportunity ? (
+            <p className="muted">Ta rola nie moze zglaszac okazji cross-sell.</p>
+          ) : null}
         </form>
       </CardContent>
     </Card>

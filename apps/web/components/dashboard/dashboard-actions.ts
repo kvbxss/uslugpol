@@ -12,6 +12,7 @@ import {
 } from "@repo/car-service";
 import { updateEventLead } from "@repo/event-service";
 import { revalidatePath } from "next/cache";
+import { requireActionPermission } from "@/lib/auth/clerk-auth";
 import { initializeModules } from "../../src/bootstrap";
 
 const DEFAULT_RETURN_PATH = "/";
@@ -46,6 +47,7 @@ export async function createLeadAction(formData: FormData) {
   const location = getText(formData, "location");
   const description = getText(formData, "description");
   const returnPath = getReturnPath(formData);
+  await requireActionPermission("lead.create", returnPath);
 
   if (!description) {
     return;
@@ -99,6 +101,7 @@ export async function reportOpportunityAction(formData: FormData) {
   const passengersRaw = getText(formData, "passengers");
   const passengers = Number(passengersRaw);
   const returnPath = getReturnPath(formData);
+  await requireActionPermission("module.event.report_opportunity", returnPath);
 
   if (!leadId) {
     return;
@@ -124,6 +127,7 @@ export async function decideOpportunityAction(formData: FormData) {
   const opportunityId = getText(formData, "opportunityId");
   const decision = getText(formData, "decision");
   const returnPath = getReturnPath(formData);
+  await requireActionPermission("module.car.decide_opportunity", returnPath);
 
   if (!opportunityId) {
     return;
@@ -150,6 +154,7 @@ export async function updateEventLeadAction(formData: FormData) {
 
   const id = getText(formData, "id");
   const returnPath = getReturnPath(formData);
+  await requireActionPermission("module.event.update", returnPath);
   if (!id) {
     return;
   }
@@ -171,6 +176,7 @@ export async function updateCarLeadAction(formData: FormData) {
 
   const id = getText(formData, "id");
   const returnPath = getReturnPath(formData);
+  await requireActionPermission("module.car.update", returnPath);
   if (!id) {
     return;
   }

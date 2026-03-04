@@ -2,12 +2,20 @@ import Link from "next/link";
 import { Badge } from "../../ui/badge";
 import { Button } from "../../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../../ui/card";
+import { buildDashboardHref } from "../dashboard-url";
 
 function mapOpportunityStatus(status: string) {
   if (status === "open") return "otwarta";
   if (status === "accepted") return "zaakceptowana";
   if (status === "rejected") return "odrzucona";
   return status;
+}
+
+function mapOpportunityStatusVariant(status: string) {
+  if (status === "open") return "warning" as const;
+  if (status === "accepted") return "success" as const;
+  if (status === "rejected") return "danger" as const;
+  return "neutral" as const;
 }
 
 type CarLeadRow = {
@@ -26,20 +34,30 @@ type CarOpportunityRow = {
 
 export function CarModule({
   basePath,
+  navigationQuery,
+  returnPath,
+  roleLabel,
+  canEditCarLead,
+  canDecideOpportunity,
   carLeads,
   carOpportunities,
   decideOpportunityAction,
 }: {
   basePath: string;
+  navigationQuery?: string;
+  returnPath: string;
+  roleLabel: string;
+  canEditCarLead: boolean;
+  canDecideOpportunity: boolean;
   carLeads: CarLeadRow[];
   carOpportunities: CarOpportunityRow[];
   decideOpportunityAction: (formData: FormData) => Promise<void>;
 }) {
   return (
-    <Card id="car-panel" className="bw-panel-card">
+    <Card id="car-panel" className="bw-panel-card bw-panel-car">
       <CardHeader className="bw-panel-header">
         <CardTitle>Modul Transport</CardTitle>
-        <div className="bw-user-pill">Administrator</div>
+        <div className="bw-user-pill">{roleLabel}</div>
       </CardHeader>
       <CardContent className="bw-panel-content">
         <h3 className="bw-subtitle">Leady transportowe</h3>
@@ -60,16 +78,26 @@ export function CarModule({
                   <td>{lead.passengers ?? "-"}</td>
                   <td>{lead.pickupLocation ?? "-"}</td>
                   <td>
-                    <Link href={`${basePath}?editCar=${lead.id}`}>
-                      <Button size="sm" variant="outline" type="button">
+                    {canEditCarLead ? (
+                      <Link
+                        href={buildDashboardHref(basePath, navigationQuery, {
+                          editCar: lead.id,
+                        })}
+                      >
+                        <Button size="sm" variant="outline" type="button">
+                          Edytuj
+                        </Button>
+                      </Link>
+                    ) : (
+                      <Button size="sm" variant="outline" type="button" disabled>
                         Edytuj
                       </Button>
-                    </Link>
+                    )}
                   </td>
                 </tr>
               ))}
               {!carLeads.length ? (
-                <tr>
+                <tr className="bw-table-empty">
                   <td colSpan={4}>Brak leadow car.</td>
                 </tr>
               ) : null}
@@ -93,10 +121,10 @@ export function CarModule({
                   <td>{item.leadId.slice(0, 6)}</td>
                   <td>{item.reason}</td>
                   <td>
-                    {item.status === "open" ? (
+                    {item.status === "open" && canDecideOpportunity ? (
                       <form action={decideOpportunityAction} className="bw-actions">
                         <input type="hidden" name="opportunityId" value={item.id} />
-                        <input type="hidden" name="returnPath" value={basePath} />
+                        <input type="hidden" name="returnPath" value={returnPath} />
                         <Button size="sm" type="submit" name="decision" value="accepted">
                           Akceptuj
                         </Button>
@@ -104,12 +132,21 @@ export function CarModule({
                           Odrzuc
                         </Button>
                       </form>
+                    ) : item.status === "open" ? (
+                      <Badge variant="neutral">brak uprawnien</Badge>
                     ) : (
-                      <Badge>{mapOpportunityStatus(item.status)}</Badge>
+                      <Badge variant={mapOpportunityStatusVariant(item.status)}>
+                        {mapOpportunityStatus(item.status)}
+                      </Badge>
                     )}
                   </td>
                 </tr>
               ))}
+              {!carOpportunities.length ? (
+                <tr className="bw-table-empty">
+                  <td colSpan={3}>Brak okazji dla transportu.</td>
+                </tr>
+              ) : null}
             </tbody>
           </table>
         </div>

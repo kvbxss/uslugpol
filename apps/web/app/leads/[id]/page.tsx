@@ -7,6 +7,11 @@ import {
 import { revalidatePath } from "next/cache";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import {
+  can,
+  requireActionPermission,
+  requirePagePermission,
+} from "@/lib/auth/clerk-auth";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,7 +21,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { initializeModules } from "@/src/bootstrap";
 
 type Params = {
@@ -30,11 +34,25 @@ function mapLeadStatus(status: string) {
   return status;
 }
 
+function mapLeadStatusVariant(status: string) {
+  if (status === "new") return "info" as const;
+  if (status === "qualified") return "warning" as const;
+  if (status === "converted") return "success" as const;
+  return "neutral" as const;
+}
+
 function mapOpportunityStatus(status: string) {
   if (status === "open") return "otwarta";
   if (status === "accepted") return "zaakceptowana";
   if (status === "rejected") return "odrzucona";
   return status;
+}
+
+function mapOpportunityStatusVariant(status: string) {
+  if (status === "open") return "warning" as const;
+  if (status === "accepted") return "success" as const;
+  if (status === "rejected") return "danger" as const;
+  return "neutral" as const;
 }
 
 function mapCategory(category: string) {
@@ -57,7 +75,12 @@ async function updateStatusAction(formData: FormData) {
 
   const leadId = String(formData.get("leadId") ?? "");
   const status = String(formData.get("status") ?? "");
-  const changedBy = String(formData.get("changedBy") ?? "ui-user");
+  const nextPath = leadId ? `/leads/${leadId}` : "/";
+  const authContext = await requireActionPermission(
+    "lead.status.update",
+    nextPath,
+  );
+  const changedBy = authContext.userId;
 
   if (status === "qualified") {
     await qualifyLead(leadId, { changedBy });
@@ -79,6 +102,8 @@ export default async function LeadDetailPage({
   initializeModules();
 
   const { id } = await params;
+  const authContext = await requirePagePermission("lead.view", `/leads/${id}`);
+  const canUpdateStatus = can(authContext, "lead.status.update");
   const lead = await getLeadById(id);
   if (!lead) {
     notFound();
@@ -120,7 +145,9 @@ export default async function LeadDetailPage({
             <div className="detail-item">
               <dt>Status</dt>
               <dd>
-                <Badge>{mapLeadStatus(lead.status)}</Badge>
+                <Badge variant={mapLeadStatusVariant(lead.status)}>
+                  {mapLeadStatus(lead.status)}
+                </Badge>
               </dd>
             </div>
             <div className="detail-item">
@@ -150,18 +177,13 @@ export default async function LeadDetailPage({
         <CardContent>
           <form action={updateStatusAction} className="status-form">
             <input type="hidden" name="leadId" value={lead.id} />
-            <Input
-              name="changedBy"
-              placeholder="kto zmienia"
-              defaultValue="ui-user"
-            />
             <div className="status-actions">
-              {lead.status === "new" ? (
+              {lead.status === "new" && canUpdateStatus ? (
                 <Button type="submit" name="status" value="qualified">
                   nowy do zakwalifikowanego
                 </Button>
               ) : null}
-              {lead.status === "qualified" ? (
+              {lead.status === "qualified" && canUpdateStatus ? (
                 <Button
                   type="submit"
                   name="status"
@@ -173,6 +195,9 @@ export default async function LeadDetailPage({
               ) : null}
               {lead.status === "converted" ? (
                 <p className="muted">Lead jest juz skonwertowany. Brak kolejnych przejsc.</p>
+              ) : null}
+              {!canUpdateStatus ? (
+                <p className="muted">Ta rola nie moze zmieniac statusu leadow.</p>
               ) : null}
             </div>
           </form>
@@ -189,7 +214,9 @@ export default async function LeadDetailPage({
               <li key={item.id} className="list-item">
                 <div className="row-between">
                   <strong>{mapCategory(item.targetService)}</strong>
-                  <Badge>{mapOpportunityStatus(item.status)}</Badge>
+                  <Badge variant={mapOpportunityStatusVariant(item.status)}>
+                    {mapOpportunityStatus(item.status)}
+                  </Badge>
                 </div>
                 <p className="muted">{item.reason}</p>
               </li>

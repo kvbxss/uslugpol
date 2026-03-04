@@ -31,10 +31,10 @@ type CarLeadForEdit = {
 };
 
 export function AddLeadModal({
-  basePath,
+  returnPath,
   createLeadAction,
 }: {
-  basePath: string;
+  returnPath: string;
   createLeadAction: FormAction;
 }) {
   return (
@@ -44,7 +44,7 @@ export function AddLeadModal({
       </CardHeader>
       <CardContent>
         <form action={createLeadAction} className="lead-form">
-          <input type="hidden" name="returnPath" value={basePath} />
+          <input type="hidden" name="returnPath" value={returnPath} />
           <label className="field">
             <span>Kanal</span>
             <Select name="channel" defaultValue="form">
@@ -83,7 +83,7 @@ export function AddLeadModal({
             />
           </label>
           <div className="bw-modal-actions">
-            <Link href={basePath}>
+            <Link href={returnPath}>
               <Button type="button" variant="outline">
                 Anuluj
               </Button>
@@ -97,11 +97,11 @@ export function AddLeadModal({
 }
 
 export function EditEventLeadModal({
-  basePath,
+  returnPath,
   eventLead,
   updateEventLeadAction,
 }: {
-  basePath: string;
+  returnPath: string;
   eventLead: EventLeadForEdit;
   updateEventLeadAction: FormAction;
 }) {
@@ -113,7 +113,7 @@ export function EditEventLeadModal({
       <CardContent>
         <form action={updateEventLeadAction} className="lead-form">
           <input type="hidden" name="id" value={eventLead.id} />
-          <input type="hidden" name="returnPath" value={basePath} />
+          <input type="hidden" name="returnPath" value={returnPath} />
           <label className="field">
             <span>Data eventu</span>
             <Input type="date" name="eventDate" defaultValue={eventLead.eventDate ?? ""} />
@@ -135,7 +135,7 @@ export function EditEventLeadModal({
             <Input type="number" step="0.01" name="budget" defaultValue={eventLead.budget ?? ""} />
           </label>
           <div className="bw-modal-actions">
-            <Link href={basePath}>
+            <Link href={returnPath}>
               <Button type="button" variant="outline">
                 Anuluj
               </Button>
@@ -149,11 +149,11 @@ export function EditEventLeadModal({
 }
 
 export function EditCarLeadModal({
-  basePath,
+  returnPath,
   carLead,
   updateCarLeadAction,
 }: {
-  basePath: string;
+  returnPath: string;
   carLead: CarLeadForEdit;
   updateCarLeadAction: FormAction;
 }) {
@@ -165,7 +165,7 @@ export function EditCarLeadModal({
       <CardContent>
         <form action={updateCarLeadAction} className="lead-form">
           <input type="hidden" name="id" value={carLead.id} />
-          <input type="hidden" name="returnPath" value={basePath} />
+          <input type="hidden" name="returnPath" value={returnPath} />
           <label className="field">
             <span>Typ pojazdu</span>
             <Input name="vehicleType" defaultValue={carLead.vehicleType ?? ""} />
@@ -183,7 +183,7 @@ export function EditCarLeadModal({
             <Input name="pickupLocation" defaultValue={carLead.pickupLocation ?? ""} />
           </label>
           <div className="bw-modal-actions">
-            <Link href={basePath}>
+            <Link href={returnPath}>
               <Button type="button" variant="outline">
                 Anuluj
               </Button>
