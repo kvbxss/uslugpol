@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Badge } from "../../ui/badge";
 import { Button } from "../../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../../ui/card";
+import { buildDashboardHref } from "../dashboard-url";
 
 function mapOpportunityStatus(status: string) {
   if (status === "open") return "otwarta";
@@ -33,6 +34,8 @@ type CarOpportunityRow = {
 
 export function CarModule({
   basePath,
+  navigationQuery,
+  returnPath,
   roleLabel,
   canEditCarLead,
   canDecideOpportunity,
@@ -41,6 +44,8 @@ export function CarModule({
   decideOpportunityAction,
 }: {
   basePath: string;
+  navigationQuery?: string;
+  returnPath: string;
   roleLabel: string;
   canEditCarLead: boolean;
   canDecideOpportunity: boolean;
@@ -74,7 +79,11 @@ export function CarModule({
                   <td>{lead.pickupLocation ?? "-"}</td>
                   <td>
                     {canEditCarLead ? (
-                      <Link href={`${basePath}?editCar=${lead.id}`}>
+                      <Link
+                        href={buildDashboardHref(basePath, navigationQuery, {
+                          editCar: lead.id,
+                        })}
+                      >
                         <Button size="sm" variant="outline" type="button">
                           Edytuj
                         </Button>
@@ -115,7 +124,7 @@ export function CarModule({
                     {item.status === "open" && canDecideOpportunity ? (
                       <form action={decideOpportunityAction} className="bw-actions">
                         <input type="hidden" name="opportunityId" value={item.id} />
-                        <input type="hidden" name="returnPath" value={basePath} />
+                        <input type="hidden" name="returnPath" value={returnPath} />
                         <Button size="sm" type="submit" name="decision" value="accepted">
                           Akceptuj
                         </Button>

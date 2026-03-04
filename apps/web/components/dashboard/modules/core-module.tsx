@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Badge } from "../../ui/badge";
 import { Button } from "../../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../../ui/card";
+import { buildDashboardHref } from "../dashboard-url";
 
 function mapLeadStatus(status: string) {
   if (status === "new") return "nowy";
@@ -64,6 +65,7 @@ type OpportunityRow = {
 
 export function CoreModule({
   basePath,
+  navigationQuery,
   roleLabel,
   canCreateLead,
   canViewLeadDetails,
@@ -72,6 +74,7 @@ export function CoreModule({
   opportunities,
 }: {
   basePath: string;
+  navigationQuery?: string;
   roleLabel: string;
   canCreateLead: boolean;
   canViewLeadDetails: boolean;
@@ -84,6 +87,10 @@ export function CoreModule({
   leads: LeadRow[];
   opportunities: OpportunityRow[];
 }) {
+  const addLeadHref = buildDashboardHref(basePath, navigationQuery, {
+    addLead: "1",
+  });
+
   return (
     <Card id="core-panel" className="bw-core-card bw-panel-core">
       <CardHeader className="bw-core-header">
@@ -113,7 +120,7 @@ export function CoreModule({
         <div className="bw-section-header">
           <h3>Leady</h3>
           {canCreateLead ? (
-            <Link href={`${basePath}?addLead=1`}>
+            <Link href={addLeadHref}>
               <Button size="sm">+ Dodaj lead</Button>
             </Link>
           ) : (

@@ -4,6 +4,7 @@ import { Button } from "../../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../../ui/card";
 import { Input } from "../../ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../ui/select";
+import { buildDashboardHref } from "../dashboard-url";
 
 type EventLeadRow = {
   id: string;
@@ -12,6 +13,8 @@ type EventLeadRow = {
 
 export function EventModule({
   basePath,
+  navigationQuery,
+  returnPath,
   roleLabel,
   canEditEventLead,
   canReportOpportunity,
@@ -19,6 +22,8 @@ export function EventModule({
   reportOpportunityAction,
 }: {
   basePath: string;
+  navigationQuery?: string;
+  returnPath: string;
   roleLabel: string;
   canEditEventLead: boolean;
   canReportOpportunity: boolean;
@@ -53,7 +58,11 @@ export function EventModule({
                   </td>
                   <td>
                     {canEditEventLead ? (
-                      <Link href={`${basePath}?editEvent=${lead.id}`}>
+                      <Link
+                        href={buildDashboardHref(basePath, navigationQuery, {
+                          editEvent: lead.id,
+                        })}
+                      >
                         <Button size="sm" variant="outline" type="button">
                           Edytuj
                         </Button>
@@ -77,7 +86,7 @@ export function EventModule({
 
         <h3 className="bw-subtitle">Informacja cross-sell do modulu Core</h3>
         <form action={reportOpportunityAction} className="bw-feedback-form">
-          <input type="hidden" name="returnPath" value={basePath} />
+          <input type="hidden" name="returnPath" value={returnPath} />
           <label className="field">
             <span>Lead eventowy</span>
             {eventLeads.length ? (

@@ -24,6 +24,8 @@ import {
   EditCarLeadModal,
   EditEventLeadModal,
 } from "./dashboard-modals";
+import { DashboardCommandCenter } from "./dashboard-command-center";
+import { buildDashboardHref } from "./dashboard-url";
 import { CarModule } from "./modules/car-module";
 import { CleaningModule } from "./modules/cleaning-module";
 import { CoreModule } from "./modules/core-module";
@@ -35,6 +37,106 @@ type DashboardAccess = {
   canViewEvent: boolean;
   canViewCar: boolean;
 };
+
+type ModuleFocus = "all" | "core" | "event" | "car" | "cleaning";
+type WindowDays = 7 | 30 | 90;
+
+type LeadResult = Awaited<ReturnType<typeof getLeads>>[number];
+type OpportunityResult = Awaited<ReturnType<typeof getOpportunities>>[number];
+type EventLeadResult = Awaited<ReturnType<typeof getEventLeads>>[number];
+type CarLeadResult = Awaited<ReturnType<typeof getCarLeads>>[number];
+type CarOpportunityResult = Awaited<
+  ReturnType<typeof getOpportunitiesByTargetService>
+>[number];
+
+function normalizeModuleFocus(value?: string): ModuleFocus {
+  if (value === "core") {
+    return "core";
+  }
+  if (value === "event") {
+    return "event";
+  }
+  if (value === "car") {
+    return "car";
+  }
+  if (value === "cleaning") {
+    return "cleaning";
+  }
+  return "all";
+}
+
+function normalizeWindowDays(value?: string): WindowDays {
+  if (value === "7") {
+    return 7;
+  }
+  if (value === "90") {
+    return 90;
+  }
+  return 30;
+}
+
+function normalizeQuery(value?: string) {
+  return (value ?? "").trim();
+}
+
+function includesQuery(value: string | null | undefined, query: string) {
+  return (value ?? "").toLowerCase().includes(query);
+}
+
+function matchesLeadQuery(lead: LeadResult, query: string) {
+  return (
+    includesQuery(lead.id, query) ||
+    includesQuery(lead.location, query) ||
+    includesQuery(lead.description, query) ||
+    includesQuery(lead.category, query) ||
+    includesQuery(lead.channel, query) ||
+    includesQuery(lead.status, query)
+  );
+}
+
+function matchesOpportunityQuery(opportunity: OpportunityResult, query: string) {
+  return (
+    includesQuery(opportunity.id, query) ||
+    includesQuery(opportunity.leadId, query) ||
+    includesQuery(opportunity.reason, query) ||
+    includesQuery(opportunity.targetService, query) ||
+    includesQuery(opportunity.status, query)
+  );
+}
+
+function matchesEventLeadQuery(lead: EventLeadResult, query: string) {
+  return (
+    includesQuery(lead.id, query) ||
+    includesQuery(lead.leadId, query) ||
+    includesQuery(lead.location, query) ||
+    includesQuery(lead.eventType, query) ||
+    includesQuery(lead.eventDate, query) ||
+    includesQuery(String(lead.guestCount ?? ""), query)
+  );
+}
+
+function matchesCarLeadQuery(lead: CarLeadResult, query: string) {
+  return (
+    includesQuery(lead.id, query) ||
+    includesQuery(lead.leadId, query) ||
+    includesQuery(lead.pickupLocation, query) ||
+    includesQuery(lead.vehicleType, query) ||
+    includesQuery(String(lead.passengers ?? ""), query) ||
+    includesQuery(String(lead.distanceKm ?? ""), query)
+  );
+}
+
+function matchesCarOpportunityQuery(
+  opportunity: CarOpportunityResult,
+  query: string,
+) {
+  return (
+    includesQuery(opportunity.id, query) ||
+    includesQuery(opportunity.leadId, query) ||
+    includesQuery(opportunity.reason, query) ||
+    includesQuery(opportunity.status, query)
+  );
+}
 
 async function loadDashboardData(access: DashboardAccess) {
   initializeModules();
@@ -86,12 +188,18 @@ export async function DashboardPage({
   editEventId,
   editCarId,
   basePath,
+  searchQuery,
+  moduleFocus,
+  windowParam,
 }: {
   authContext: AuthContext;
   isAddLeadOpen: boolean;
   editEventId?: string;
   editCarId?: string;
   basePath: string;
+  searchQuery?: string;
+  moduleFocus?: string;
+  windowParam?: string;
 }) {
   const canViewCore = can(authContext, "module.core.view");
   const canViewEvent = can(authContext, "module.event.view");
@@ -117,7 +225,36 @@ export async function DashboardPage({
       canViewCar,
     });
 
-  const stats = buildDashboardStats(leads, opportunities);
+  const normalizedQuery = normalizeQuery(searchQuery);
+  const activeQuery = normalizedQuery.toLowerCase();
+  const activeFocus = normalizeModuleFocus(moduleFocus);
+  const activeWindowDays = normalizeWindowDays(windowParam);
+  const navigationQuery = new URLSearchParams(
+    [
+      normalizedQuery ? ["q", normalizedQuery] : null,
+      activeFocus !== "all" ? ["focus", activeFocus] : null,
+      activeWindowDays !== 30 ? ["window", String(activeWindowDays)] : null,
+    ].filter((entry): entry is [string, string] => Boolean(entry)),
+  ).toString();
+  const returnPath = buildDashboardHref(basePath, navigationQuery);
+
+  const filteredLeads = activeQuery
+    ? leads.filter((lead) => matchesLeadQuery(lead, activeQuery))
+    : leads;
+  const filteredOpportunities = activeQuery
+    ? opportunities.filter((item) => matchesOpportunityQuery(item, activeQuery))
+    : opportunities;
+  const filteredEventLeads = activeQuery
+    ? eventLeads.filter((lead) => matchesEventLeadQuery(lead, activeQuery))
+    : eventLeads;
+  const filteredCarLeads = activeQuery
+    ? carLeads.filter((lead) => matchesCarLeadQuery(lead, activeQuery))
+    : carLeads;
+  const filteredCarOpportunities = activeQuery
+    ? carOpportunities.filter((item) => matchesCarOpportunityQuery(item, activeQuery))
+    : carOpportunities;
+
+  const stats = buildDashboardStats(filteredLeads, filteredOpportunities);
   const selectedEventLead = canUpdateEventLead
     ? selectById(eventLeads, editEventId)
     : null;
@@ -126,103 +263,158 @@ export async function DashboardPage({
   const isModalOpen = Boolean(
     shouldShowAddLeadModal || selectedEventLead || selectedCarLead,
   );
+  const showCore = canViewCore && (activeFocus === "all" || activeFocus === "core");
+  const showEvent = canViewEvent && (activeFocus === "all" || activeFocus === "event");
+  const showCar = canViewCar && (activeFocus === "all" || activeFocus === "car");
+  const showCleaning =
+    canViewCleaning && (activeFocus === "all" || activeFocus === "cleaning");
+  const showRightColumn = showEvent || showCar || showCleaning;
+  const shouldOpenOperationalPanels =
+    activeFocus !== "all" || shouldShowAddLeadModal || Boolean(selectedEventLead) || Boolean(selectedCarLead);
 
   return (
     <main className="bw-layout">
       <DashboardSidebar
+        basePath={basePath}
+        navigationQuery={navigationQuery}
+        activeFocus={activeFocus}
         roleLabel={authContext.roleLabel}
         displayName={authContext.displayName}
       />
 
       <section className="bw-content">
-        <div className="bw-hero">
-          <div>
-            <p className="bw-hero-kicker">Orkiestracja leadow</p>
-            <h1 className="bw-hero-title">Centrum operacyjne</h1>
-            <p className="bw-hero-subtitle">
-              Jeden widok do kontroli Core oraz poszczegolnych modulow.
-            </p>
-          </div>
-          <div className="bw-chip-list" aria-label="Kluczowe metryki">
-            <span className="bw-chip">
-              Nowe <strong>{stats.newCount}</strong>
-            </span>
-            <span className="bw-chip">
-              Zakwalifikowane <strong>{stats.qualifiedCount}</strong>
-            </span>
-            <span className="bw-chip">
-              Skonwertowane <strong>{stats.convertedCount}</strong>
-            </span>
-            <span className="bw-chip">
-              Dzis <strong>{stats.opportunitiesToday}</strong>
-            </span>
-          </div>
-        </div>
+        <DashboardCommandCenter
+          basePath={basePath}
+          displayName={authContext.displayName}
+          roleLabel={authContext.roleLabel}
+          canCreateLead={canCreateLead}
+          moduleFocus={activeFocus}
+          searchQuery={normalizedQuery}
+          windowDays={activeWindowDays}
+          leads={filteredLeads.map((lead) => ({
+            id: lead.id,
+            category: lead.category,
+            channel: lead.channel,
+            location: lead.location,
+            status: lead.status,
+            description: lead.description,
+            createdAt: lead.createdAt,
+          }))}
+          opportunities={filteredOpportunities.map((item) => ({
+            id: item.id,
+            leadId: item.leadId,
+            targetService: item.targetService,
+            reason: item.reason,
+            status: item.status,
+            createdAt: item.createdAt,
+          }))}
+          eventLeads={filteredEventLeads.map((lead) => ({
+            id: lead.id,
+            leadId: lead.leadId,
+            eventDate: lead.eventDate,
+            location: lead.location,
+            guestCount: lead.guestCount,
+          }))}
+          carLeads={filteredCarLeads.map((lead) => ({
+            id: lead.id,
+            leadId: lead.leadId,
+            vehicleType: lead.vehicleType,
+            passengers: lead.passengers,
+            pickupLocation: lead.pickupLocation,
+          }))}
+        />
 
-        {canViewCore ? (
-          <CoreModule
-            basePath={basePath}
-            roleLabel={authContext.roleLabel}
-            canCreateLead={canCreateLead}
-            canViewLeadDetails={canViewLeadDetails}
-            stats={stats}
-            leads={leads.slice(0, 6).map((lead) => ({
-              id: lead.id,
-              category: lead.category,
-              channel: lead.channel,
-              location: lead.location,
-              status: lead.status,
-              createdAtLabel: formatDashboardDate(lead.createdAt),
-            }))}
-            opportunities={opportunities.slice(0, 4).map((item) => ({
-              id: item.id,
-              leadId: item.leadId,
-              targetService: item.targetService,
-              reason: item.reason,
-              status: item.status,
-            }))}
-          />
-        ) : null}
+        <details className="bw-ops-shell" open={shouldOpenOperationalPanels}>
+          <summary className="bw-ops-summary">
+            <span>Panele operacyjne</span>
+            <small>Core, Event, Transport, Sprzatanie</small>
+          </summary>
+          <div className="bw-ops-grid">
+            {showCore ? (
+              <div className={showRightColumn ? "bw-core-slot" : "bw-core-slot bw-core-slot-full"}>
+                <CoreModule
+                  basePath={basePath}
+                  navigationQuery={navigationQuery}
+                  roleLabel={authContext.roleLabel}
+                  canCreateLead={canCreateLead}
+                  canViewLeadDetails={canViewLeadDetails}
+                  stats={stats}
+                  leads={filteredLeads.slice(0, 8).map((lead) => ({
+                    id: lead.id,
+                    category: lead.category,
+                    channel: lead.channel,
+                    location: lead.location,
+                    status: lead.status,
+                    createdAtLabel: formatDashboardDate(lead.createdAt),
+                  }))}
+                  opportunities={filteredOpportunities.slice(0, 8).map((item) => ({
+                    id: item.id,
+                    leadId: item.leadId,
+                    targetService: item.targetService,
+                    reason: item.reason,
+                    status: item.status,
+                  }))}
+                />
+              </div>
+            ) : null}
 
-        <div className="bw-right-column">
-          {canViewEvent ? (
-            <EventModule
-              basePath={basePath}
-              roleLabel={authContext.roleLabel}
-              canEditEventLead={canUpdateEventLead}
-              canReportOpportunity={canReportOpportunity}
-              eventLeads={eventLeads.map((lead) => ({
-                id: lead.id,
-                leadId: lead.leadId,
-              }))}
-              reportOpportunityAction={reportOpportunityAction}
-            />
-          ) : null}
-          {canViewCar ? (
-            <CarModule
-              basePath={basePath}
-              roleLabel={authContext.roleLabel}
-              canEditCarLead={canUpdateCarLead}
-              canDecideOpportunity={canDecideCarOpportunity}
-              carLeads={carLeads.map((lead) => ({
-                id: lead.id,
-                leadId: lead.leadId,
-                passengers: lead.passengers,
-                pickupLocation: lead.pickupLocation,
-              }))}
-              carOpportunities={carOpportunities.map((item) => ({
-                id: item.id,
-                leadId: item.leadId,
-                reason: item.reason,
-                status: item.status,
-              }))}
-              decideOpportunityAction={decideOpportunityAction}
-            />
-          ) : null}
-          {canViewCleaning ? (
-            <CleaningModule roleLabel={authContext.roleLabel} />
-          ) : null}
-        </div>
+            {showRightColumn ? (
+              <div
+                className={
+                  showCore ? "bw-right-column" : "bw-right-column bw-right-column-full"
+                }
+              >
+                {showEvent ? (
+                  <EventModule
+                    basePath={basePath}
+                    navigationQuery={navigationQuery}
+                    returnPath={returnPath}
+                    roleLabel={authContext.roleLabel}
+                    canEditEventLead={canUpdateEventLead}
+                    canReportOpportunity={canReportOpportunity}
+                    eventLeads={filteredEventLeads.map((lead) => ({
+                      id: lead.id,
+                      leadId: lead.leadId,
+                    }))}
+                    reportOpportunityAction={reportOpportunityAction}
+                  />
+                ) : null}
+                {showCar ? (
+                  <CarModule
+                    basePath={basePath}
+                    navigationQuery={navigationQuery}
+                    returnPath={returnPath}
+                    roleLabel={authContext.roleLabel}
+                    canEditCarLead={canUpdateCarLead}
+                    canDecideOpportunity={canDecideCarOpportunity}
+                    carLeads={filteredCarLeads.map((lead) => ({
+                      id: lead.id,
+                      leadId: lead.leadId,
+                      passengers: lead.passengers,
+                      pickupLocation: lead.pickupLocation,
+                    }))}
+                    carOpportunities={filteredCarOpportunities.map((item) => ({
+                      id: item.id,
+                      leadId: item.leadId,
+                      reason: item.reason,
+                      status: item.status,
+                    }))}
+                    decideOpportunityAction={decideOpportunityAction}
+                  />
+                ) : null}
+                {showCleaning ? (
+                  <CleaningModule roleLabel={authContext.roleLabel} />
+                ) : null}
+              </div>
+            ) : null}
+
+            {!showCore && !showRightColumn ? (
+              <div className="bw-focus-empty">
+                Brak paneli dla wybranego filtra i uprawnien.
+              </div>
+            ) : null}
+          </div>
+        </details>
 
         {isModalOpen ? (
           <div className="bw-content-backdrop" aria-hidden />
@@ -230,14 +422,14 @@ export async function DashboardPage({
 
         {shouldShowAddLeadModal ? (
           <AddLeadModal
-            basePath={basePath}
+            returnPath={returnPath}
             createLeadAction={createLeadAction}
           />
         ) : null}
 
         {selectedEventLead ? (
           <EditEventLeadModal
-            basePath={basePath}
+            returnPath={returnPath}
             eventLead={selectedEventLead}
             updateEventLeadAction={updateEventLeadAction}
           />
@@ -245,7 +437,7 @@ export async function DashboardPage({
 
         {selectedCarLead ? (
           <EditCarLeadModal
-            basePath={basePath}
+            returnPath={returnPath}
             carLead={selectedCarLead}
             updateCarLeadAction={updateCarLeadAction}
           />
